@@ -1,0 +1,82 @@
+
+	@supports (font-size: clamp(1rem, 1vi, 1rem)) {
+		:root {
+			  --fz-xxs: clamp(0.51rem, -0.02vi + 0.52rem, 0.5rem);
+			  --fz-xs: clamp(0.64rem, 0.05vi + 0.63rem, 0.67rem);
+			  --fz-sm: clamp(0.8rem, 0.17vi + 0.76rem, 0.89rem);
+			  --fz-md: clamp(1rem, 0.34vi + 0.91rem, 1.19rem);
+			  --fz-lg: clamp(1.25rem, 0.61vi + 1.1rem, 1.4rem);
+			  --fz-xl: clamp(1.56rem, 1vi + 1.31rem, 2.11rem);
+			  --fz-xxl: clamp(1.95rem, 1.56vi + 1.56rem, 2.81rem);
+			  --fz-xxxl: clamp(2.44rem, 2.38vi + 1.85rem, 3.75rem);
+			  --fz-xxxxl: clamp(3.05rem, 3.54vi + 2.17rem, 5rem);
+			  --fz-display: var(--fz-xxxxl);
+		}
+	  }
+	  /* For browsers that don't support clamp */
+	  @supports not (font-size: clamp(1rem, 1vi, 1rem)) {
+		:root {
+			  --fz-xxs: 0.51rem;
+			  --fz-xs: 0.64rem;
+			  --fz-sm: 0.8rem;
+			  --fz-md: 1rem;
+			  --fz-lg: 1.25rem;
+			  --fz-xl: 1.56rem;
+			  --fz-xxl: 1.95rem;
+			  --fz-xxxl: 2.44rem;
+			  --fz-xxxxl: 3.05rem;
+			  --fz-display: var(--fz-xxxl);
+		}
+		@media screen and (min-width: 1280px) {
+		  :root {
+				  --fz-xxs: 0.5rem;
+				  --fz-xs: 0.67rem;
+				  --fz-sm: 0.89rem;
+				  --fz-md: 1.19rem;
+				  --fz-lg: 1.58rem;
+				  --fz-xl: 2.11rem;
+				  --fz-xxl: 2.81rem;
+				  --fz-xxxl: 3.75rem;
+				  --fz-xxxxl: 5rem;
+				  --fz-display: var(--fz-xxxl);
+		  }
+		}
+	  }
+	:root{
+
+	// COLORS
+	--color-greys-100: #DBDDDA;
+	--color-greys-200: #BABBB9;
+	--color-greys-400: #8A9287;
+	--color-greys-600: #5E5E5E;
+	--color-greys-800: #3E4A41;
+
+	// SPACERS
+	--spacer-1: 4px;
+	--spacer-2: calc(2 * var(--spacer-1));
+	--spacer-3: calc(3 * var(--spacer-1));
+	--spacer-4: calc(4 * var(--spacer-1));
+	--spacer-5: calc(5 * var(--spacer-1));
+	--spacer-6: calc(6 * var(--spacer-1));
+	--spacer-7: calc(7 * var(--spacer-1));
+	--spacer-8: calc(8 * var(--spacer-1));
+	--spacer-9: calc(9 * var(--spacer-1));
+	--spacer-10: calc(10 * var(--spacer-1));
+	--spacer-11: calc(11 * var(--spacer-1));
+	--spacer-12: calc(12 * var(--spacer-1));
+	--spacer-13: calc(13 * var(--spacer-1));
+
+
+// SEMANTIC
+	--black:#333;
+	--white: #FFF;
+	
+		--grid-spacer: 1.5rem;
+		--ff-body: "Nunito Sans";
+		--ff-body: "Poppins";
+		--ff-header: "Vibrate", sans-serif;
+		--color-accent: #857550;
+		--color-text: #333;
+		--img-matte : 1.25rem;
+	
+}

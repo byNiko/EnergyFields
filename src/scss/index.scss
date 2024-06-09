@@ -1,0 +1,36 @@
+@use "variables";
+// @forward "normalize";
+@use "reboot";
+@use "wp-defaults";
+@use "base";
+@use "typography";
+@use "grid";
+@use "sidebar";
+@use "navigation";
+@use "pages/single_art_work";
+
+.single-art-work {
+	article {
+		display: flex;
+    flex-direction: column;
+    gap: 2rem;
+	}
+}
+.sidebar__art-work {
+	font-size: calc(.95 * var(--fz-sm));
+	text-transform: uppercase;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacer-3);
+
+	.sidebar__title {
+		font-weight: 400;
+		font-size: calc(.75 * var(--fz-sm));
+		color: var(--color-accent);
+	}
+
+	.sidebar__content {
+		font-weight: 500;
+		line-height: 1.23
+	}
+}

@@ -1,0 +1,36 @@
+@font-face {
+	font-family: "Vibrate";
+	src: url('../fonts/Vibrate.woff');
+}
+html,body {
+	line-height: 1.6;
+}
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+	text-transform: uppercase;
+	font-weight: 600;
+		letter-spacing: -1px;
+		color: var(--color-accent);
+	&.color-black{
+		color: #111;
+	}
+	&.ff-display {
+		font-family: var(--ff-header);
+		letter-spacing: 0;	
+	}
+}
+
+.h1 {font-size: var(--fz-xxl);}
+.h2 {font-size: var(--fz-xl);}
+.h3 {font-size: var(--fz-lg);}
+.h4 {font-size: var(--fz-md);}
+.h5 {font-size: var(--fz-sm);}
+.h6 {font-size: var(--fz-xs);}
+
+.fz-md {
+	font-size: var(--fz-md);
+}

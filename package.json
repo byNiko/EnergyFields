@@ -1,0 +1,26 @@
+{
+	"name": "byniko",
+	"version": "1.0.0",
+	"description": "[![Build Status](https://travis-ci.org/Automattic/_s.svg?branch=master)](https://travis-ci.org/Automattic/_s)",
+	"main": "index.js",
+	"scripts": {
+		"start": "npm-run-all --parallel sync wpstart",
+		"wpstart": "wp-scripts start",
+		"build": "npm-run-all --parallel wpbuild",
+		"wpbuild": "wp-scripts build",
+		"sync": "browser-sync start -p 'pst-2024.local' --files '**/*.php' 'dist/*.js' 'dist/*.css'",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+    "packages-update": "wp-scripts packages-update",
+        "plugin-zip": "wp-scripts plugin-zip"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@wordpress/scripts": "^27.7.0",
+		"browser-sync": "^3.0.2",
+		"npm-run-all": "^4.1.5"
+	}
+}
