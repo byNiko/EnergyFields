@@ -2,6 +2,10 @@
 	font-family: "Vibrate";
 	src: url('../fonts/Vibrate.woff');
 }
+@font-face {
+	font-family: "Helvetica Neue Condensed Bold";
+	src: url('../fonts/Helvetica_Neue_Condensed_Bold.woff');
+}
 html,body {
 	line-height: 1.6;
 }
@@ -15,6 +19,7 @@ html,body {
 	font-weight: 600;
 		letter-spacing: -1px;
 		color: var(--color-accent);
+		font-family: var(--ff-header-normal);
 	&.color-black{
 		color: #111;
 	}
@@ -30,7 +35,9 @@ html,body {
 .h4 {font-size: var(--fz-md);}
 .h5 {font-size: var(--fz-sm);}
 .h6 {font-size: var(--fz-xs);}
-
+.h2,.h3 {
+	letter-spacing: 0.05em;
+}
 .fz-md {
 	font-size: var(--fz-md);
 }

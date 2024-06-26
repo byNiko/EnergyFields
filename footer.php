@@ -1,13 +1,22 @@
-	<footer id="colophon" class="site-footer">
-		<div class="site-info">
+<?php if(!is_front_page()) : ?>
+</div><!-- inner-page -->
+</div>
+<?php endif; ?>
 
-		</div><!-- .site-info -->
-	</footer><!-- #colophon -->
-	</div><!-- inner-page -->
-	</div><!-- #page -->
+<footer id="colophon" class="site-footer">
+	<div class="container">
+	<div class="site-info d-flex">
+		<?php if(!is_front_page()): ?>
+		<button class="button button-accent ml-a">Back to top</button>
+		<?php endif; ?>
+	</div><!-- .site-info -->
+	</div>
+</footer><!-- #colophon -->
 
-	<?php wp_footer(); ?>
+</div><!-- #page -->
 
-	</body>
+<?php wp_footer(); ?>
 
-	</html>
+</body>
+
+</html>

@@ -23,10 +23,10 @@
 				if (have_rows('section_content')) :
 					while (have_rows('section_content')) : the_row();
 		?>
-						<section>
+						<section id="<?= $section_link; ?>" class="scroll-target">
 
 							<header>
-								<h2 id="<?= $section_link; ?>" class="h2 section-title"><?= $section_title; ?></h2>
+								<h2  class="h2 section-title"><?= $section_title; ?></h2>
 							</header>
 							<?php
 							if (get_row_layout() == 'general_text') :
@@ -36,7 +36,9 @@
 								</div>
 								<?php
 							endif;
-							if (get_row_layout() == 'description_list') :
+							if (get_row_layout() == 'description_list') :?>
+								<h3 class="h3 content-title"><?= get_sub_field('section_header');?></h3>
+								<?php
 								if (have_rows('list_items')) : ?>
 									<dl class="team-members">
 										<?php

@@ -13,7 +13,8 @@ function byniko_make_inpage_link($link, $sanitized) {
 
 if (have_rows('page_content') || count($args)) :
 ?>
-	<aside id="inpage-links" class="inpage-links has-matte">
+	<aside id="inpage-links" class="inpage-links has-matte sticky-top">
+		<!-- <div class="position-container"> -->
 		<?php
 		if (have_rows('page_content')) :
 			while (have_rows('page_content')) : the_row();
@@ -32,6 +33,7 @@ if (have_rows('page_content') || count($args)) :
 		endif;
 
 		?>
+		<!-- </div> -->
 	</aside>
 <?php
 

@@ -5,6 +5,7 @@
 			  --fz-xs: clamp(0.64rem, 0.05vi + 0.63rem, 0.67rem);
 			  --fz-sm: clamp(0.8rem, 0.17vi + 0.76rem, 0.89rem);
 			  --fz-md: clamp(1rem, 0.34vi + 0.91rem, 1.19rem);
+			  --fz-hmd: clamp(1.15rem, 0.5vi + 0.98rem, 1.19rem);
 			  --fz-lg: clamp(1.25rem, 0.61vi + 1.1rem, 1.4rem);
 			  --fz-xl: clamp(1.56rem, 1vi + 1.31rem, 2.11rem);
 			  --fz-xxl: clamp(1.95rem, 1.56vi + 1.56rem, 2.81rem);
@@ -68,15 +69,18 @@
 
 
 // SEMANTIC
-	--black:#333;
+	--black:#000;
 	--white: #FFF;
+	--bone: #EFEFEF;
+	--color-accent: #857550;
 	
 		--grid-spacer: 1.5rem;
-		--ff-body: "Nunito Sans";
-		--ff-body: "Poppins";
+		--ff-body: "Inter", "Poppins", sans-serif;
 		--ff-header: "Vibrate", sans-serif;
-		--color-accent: #857550;
-		--color-text: #333;
+		--ff-display: "Vibrate", sans-serif;
+		--ff-header-normal: "Helvetica Neue Condensed Bold", "helvetica", sans-serif;
+		
+		--color-text: var(--black);
 		--img-matte : 1.25rem;
 	
 }

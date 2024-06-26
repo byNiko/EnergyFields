@@ -5,11 +5,32 @@ class Artwork{
 	private $image_caption;
 	private $post;
 	private $ID;
+	public $admission;
 	public function __construct($post)
 	{
 		$this->post = $post;
 		$this->ID = $post->ID;
-		$this->main_image_id = get_field('main_image', $post);		
+		$this->main_image_id = get_field('main_image', $post);	
+		$this->admission = get_field('admission', $post);	
+	}
+
+	public function get_card(){
+		$format = "<a href='%s' class='art-work__card '>
+		<figure class='has-matte'>
+			<div class='art-work__main-img-wrapper'>
+				%s
+			</div>
+			<figcaption class='art-work__title'>
+			%s
+			</figcaption>
+		</figure>
+	</a>";
+	return sprintf($format,  
+	$this->get_permalink(),
+	$this->get_main_image('medium', array('class' => 'img-fluid')),
+	$this->get_title()
+	);
+	
 	}
 
 	public function get_main_image($size = 'full', $arr = []){

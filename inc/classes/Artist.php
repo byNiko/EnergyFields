@@ -18,7 +18,10 @@ class Artist {
 			$this->post->$selector;
 	}
 
-	public function get_artist_image() {
-		return get_the_post_thumbnail($this->post->ID, 'medium');
+	public function get_artist_image($size = 'medium', $args = []) {
+		return get_the_post_thumbnail($this->post->ID, $size, $args);
+	}
+	public function get_name(){
+		return $this->post->post_name;
 	}
 }

@@ -38,12 +38,24 @@ $location = new Location($locations[0]);
 			</div>
 		</div>
 	<?php endif; ?>
-	<?php if ($address = $location->get_address()) : 	?>
+	<?php 
+	if ($address = $location->get_address()) : 	
+		
+		$str = 
+		urlencode($address['street_number']) . "+" 
+		. urlencode($address['street_name']). "%2C+"
+		. urlencode($address['city']) . "%2C+" 
+		. urlencode($address['state']) . "+" 
+		. urlencode($address['zip_code']);
+		$map_url = "//maps.google.com/?q=$str";
+		$map_url = "https://www.google.com/maps/dir/?api=1&destination=$str";
+		// $map_url = "https://www.google.com/maps/search/?api=1&$str";
+	?>
 		<div class="sidebar__section ">
 			<div class="sidebar__title">
 				Address
 			</div>
-			<div class="sidebar__content">
+			<a href="<?= $map_url;?> " class="sidebar__content">
 				<?php if ($address['name']) : ?>
 					<div class="address">
 						<?= $address['name']; ?>
@@ -55,7 +67,7 @@ $location = new Location($locations[0]);
 				<div class="address">
 					<?= $address['city']; ?> <?= $address['state']; ?>, <?= $address['zip_code']; ?>
 				</div>
-			</div>
+				</a>
 		</div>
 	<?php endif; ?>
 

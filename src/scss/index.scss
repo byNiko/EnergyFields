@@ -2,12 +2,16 @@
 // @forward "normalize";
 @use "reboot";
 @use "wp-defaults";
+@use "utilities";
+@use "./components/index";
+@use "spacing";
 @use "base";
 @use "typography";
 @use "grid";
 @use "sidebar";
 @use "navigation";
 @use "pages/single_art_work";
+@use "event";
 
 .single-art-work {
 	article {

@@ -12,7 +12,7 @@ $allLocations = get_posts($default_args);
 ?>
 <div class="container">
 	<header class="entry-header ">
-		<?php the_title('<h1 class="h1 entry-title">', '</h1>'); ?>
+		<?php the_title('<h1 class="h1 entry-title has-arrow">', '</h1>'); ?>
 	</header><!-- .entry-header -->
 
 
@@ -36,11 +36,12 @@ $allLocations = get_posts($default_args);
 			if ($allLocations) :
 				foreach ($allLocations as $l) :
 					$location = new Location($l); ?>
-					<section>
+					<section  >
 						<?php
 
 						echo $location->get_featured_image('full', array('class' => "img-fluid")); ?>
-						<h2 id="<?= sanitize_title($location->get_name());?>" class="h2">
+						<div id="<?= sanitize_title($location->get_short_name());?>" class="scroll-target">
+						<h2 class="h2">
 							<?= $location->get_name(); ?>
 						</h2>
 						<div class="content">
@@ -49,20 +50,20 @@ $allLocations = get_posts($default_args);
 							</div>
 						</div>
 						<div class="content">
-							<h6 class="h6">Directions</h6>
+							<div class="h3">Directions</div>
 							<div class="columns">
 								<?= $location->get_directions(); ?>
 							</div>
 						</div>
 						<div class="content">
-							<h6 class="h6">Parking</h6>
+							<div class="h3">Parking</div>
 							<div class="columns">
 								<?= $location->get_parking(); ?>
 							</div>
 						</div>
 						<?php if ($hours = $location->get_hours()) : ?>
 							<div class="content">
-								<h6 class="h6">Hours</h6>
+								<div class="h3">Hours</div>
 								<div class="">
 									<?
 									foreach ($hours as $hour) :
@@ -82,10 +83,10 @@ $allLocations = get_posts($default_args);
 							</div>
 						<?php endif; ?>
 						<?php if ($address = $location->get_address()) : 	?>
-							<div class=" ">
-								<h6 class="h6">
+							<div class="content ">
+								<div class="h3">
 									Address
-								</h6>
+								</div>
 								<div class="">
 									<?php if ($address['name']) : ?>
 										<div class="address">
@@ -101,6 +102,7 @@ $allLocations = get_posts($default_args);
 								</div>
 							</div>
 						<?php endif; ?>
+						</div>
 					</section>
 			<?php endforeach;
 			endif; ?>

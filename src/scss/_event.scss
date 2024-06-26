@@ -1,0 +1,65 @@
+.page-special-events .inner-page {
+	background: transparent;
+}
+.event-card {
+	margin-top: var(--grid-spacer);
+	font-family: var(--ff-header-normal);
+	background-color: var(--white);
+	box-shadow: 0 5px 8px -5px var(--black);
+}
+
+.event-card__inner {
+	display: grid;
+    grid-template-columns: 150px 1fr 200px;
+    gap: var(--gap);
+	& > div {
+		display : flex;
+		flex-direction: column;
+	}
+
+	.event-card__location {
+		margin-top: auto;
+		font-family: var(--ff-header-normal);
+	}
+}
+.event-card__day-of-week,
+.event-card__date,
+.event-card__time,
+.event-card__location {
+	text-transform: uppercase;
+	font-weight: 600;
+	font-size: var(--fz-md);
+}
+.event-card__date,
+.event-card__time {
+	color: var(--color-accent);
+}
+
+.event-card__time {
+	margin-top: auto;
+	display: flex;
+}
+
+.event-card__event-category {
+	text-transform: uppercase;
+	font-weight: 600;
+	// color: var(--color-accent);
+	font-size: var(--fz-sm);
+}
+
+.event-card__event-name {
+	text-transform: uppercase;
+	font-weight: 600;
+	font-size: var(--fz-xl);
+	margin-bottom: 0;
+	font-family: var(--ff-header-normal);
+}
+.artist__names {
+	display: flex;
+	text-transform: uppercase;
+	color: var(--color-accent);
+	gap: var(--grid-spacer);
+	font-size: var(--fz-sm);
+	font-weight: 600;
+	font-family: var(--ff-header-normal);
+}

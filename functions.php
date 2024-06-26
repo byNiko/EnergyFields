@@ -139,7 +139,7 @@ function byniko_scripts() {
 
 	wp_enqueue_style(
 		'byniko-google-fonts',
-		"//fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap",
+		"//fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap",
 		array(),
 		$asset_file['version']
 	);
@@ -179,5 +179,92 @@ require get_template_directory() . '/inc/template-functions.php';
 
 // autoload classes
 spl_autoload_register(function ($class_name) {
-    get_template_part("/inc/classes/$class_name");
+	get_template_part("/inc/classes/$class_name");
 });
+
+
+// Auto add and update Title field for Event Post Type
+// todo: take a look at this to figure out the issue we've got
+// https://wordpress.stackexchange.com/questions/105926/rewriting-post-slug-before-post-save
+function byniko_custom_event_post_title_and_slug($post_id) {
+	$my_post = array();
+	$my_post['ID'] = $post_id;
+	if (get_post_type() == 'event') {
+		
+		$artwork = get_field('art_work', $post_id);
+		$daytime = get_field('start', $post_id);
+		$my_post['post_title'] = $artwork[0]->post_title . ': ' . $daytime;
+		$my_post['post_name'] = sanitize_title($my_post['post_title']);
+		remove_action( 'save_post', 'byniko_custom_event_post_title_and_slug', 10, 3 );
+		wp_update_post($my_post);
+		add_action( 'save_post', 'byniko_custom_event_post_title_and_slug', 10, 3 );
+	}
+}
+
+// run after ACF saves the $_POST['fields'] data
+add_action('acf/save_post', 'byniko_custom_event_post_title_and_slug', 25);
+
+
+function byniko_get_events($args=[]){
+	$paged = (get_query_var('paged')) ? get_query_var('paged') : 0;
+	$postsPerPage = 2;
+	$postOffset = $paged * $postsPerPage;
+	// get all locations
+	$default_args = array(
+		'posts_per_page'  => $postsPerPage,
+		'offset'          => $postOffset,
+		'post_type' => 'event',
+		'status' => 'publish'
+	);
+	$args = array_merge($default_args, $args);
+	return get_posts($args);
+	// return new WP_Query($args);
+}
+
+function byniko_pre_get_events( \WP_Query $query ) {
+    if ( is_admin() ) {
+        return; // we want the frontend! exit if it's WP Admin
+    }
+    if ( !$query->is_main_query() ) {
+        return; // we want the main query!
+    }
+    if ( ! is_page( 'Special Events' ) ) {
+        return; // we only want the movie archives
+    }
+    // On the movie archive, show 50 posts
+    // $query->set( 'post_type', 'event' );
+}
+
+add_action( 'pre_get_posts', 'byniko_pre_get_events', 1 );
+
+function add_slug_body_class( $classes ) {
+	global $post;
+	if ( isset( $post ) ) {
+	$classes[] = $post->post_type . '-' . $post->post_name;
+	}
+	return $classes;
+	}
+	add_filter( 'body_class', 'add_slug_body_class' );
+
+	function get_arrow($size = ''){
+		return sprintf(
+			"<div class='arrow-parts__wrapper %s'>
+		<div class='arrow_parts'>
+			<div class='arrow-parts__circle'></div>
+			<div class='arrow-parts__line'></div>
+			<div class='arrow-parts__spade'></div>
+		</div>
+	</div>",
+		$size);
+	
+	}
+
+	function get_arrow_with_date($start_date, $end_date){
+		$arrow_html = get_arrow();
+		$format = "
+<div class='date-arrow__date' style='margin-right: 1rem'>%s</div>
+			%s
+			<div class='date-arrow__date' style='margin-left: .5rem'>%s</div>
+		";
+		return sprintf($format,$start_date, $arrow_html, $end_date);
+	}

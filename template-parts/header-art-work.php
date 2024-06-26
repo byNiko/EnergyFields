@@ -12,5 +12,6 @@ $art = new Artwork($post);
 		<h1 class="h1 normal-font">
 					<?php the_title(); 	?>
 				</h1>
+				<?php echo get_arrow("md");?>
 	</header>
 </div>

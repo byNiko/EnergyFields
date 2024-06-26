@@ -8,8 +8,9 @@
 	display: none;
 }
 .site-header{
-	padding: 1rem;
+	padding: 1rem 0;
 	display: flex;
+	gap: 8%;
 	justify-content: space-between;
 	
 }
@@ -21,22 +22,26 @@
 }
 .main-navigation,
 .secondary-navigation {
-	padding: 0 2rem;
+	// padding: 0 2rem;
 	font-size: var(--fz-md);
 	.menu {
 		list-style-type: none;
 		display: flex;
 		gap: 1rem;
+		padding:0;
+		margin:0;
 	}
 	a {
-		font-size: 1rem;
 		text-decoration: none;
 		color: var(--color-text);
 		text-transform: uppercase;
-		font-weight: 400;
+		font-family: var(--ff-header-normal);
+		font-size: var( --fz-md);
 		&:hover {
 			color:var(--color-accent);
 		}
 	}
 }
-
+.main-navigation {
+	margin-right: auto;
+}

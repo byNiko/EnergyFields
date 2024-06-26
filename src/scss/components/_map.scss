@@ -1,0 +1,23 @@
+.map-filter {
+	position:fixed;
+	bottom:0;
+	left:50%;
+	transform: translatex(-50%);
+border: 3px solid var(--color-accent);
+border-bottom:0;
+}
+
+.map-filter__item {
+	border:none;
+	transition: background-color .2s, color .2s;
+	font-family: var(--ff-header-normal);
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	font-size: var(--fz-md);
+	padding: .5rem 2rem;
+	&:hover,
+	&.is-active {
+		color: var(--white);
+		background: var(--color-accent);
+	}
+}

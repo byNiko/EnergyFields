@@ -9,8 +9,20 @@
 .inpage-link {
 	text-transform: uppercase;
 	font-weight: 500;
+	position: relative;
 	// line-height: 1.3;
-	&.is-active {
-		background: blue;
+	&:before {
+		content: '';
+		background: transparent;
+		transition: background .2s;
+	}
+	&.is-active:before {
+		content: '';
+		position:absolute;
+		left: -15px;
+		width: 10px;
+		height: 100%;
+		background: var(--color-accent);
+		
 	}
 }

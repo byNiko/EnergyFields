@@ -1,0 +1,38 @@
+.d-flex {
+	display: flex;
+}
+.ml-a {
+	margin-left: auto;
+}
+.mr-a {
+	margin-right: auto;
+}
+
+.mx-a {
+	@extend .ml-a;
+	@extend .mr-a;
+}
+.mt-4 {
+	margin-top: var(--grid-spacer);
+}
+.mb-4 {
+	margin-bottom: var(--grid-spacer);
+}
+.my-4 {
+	@extend .mt-4;
+	@extend .mb-4;
+}
+
+.align--start {
+	align-items: start
+}
+.align--end {
+	align-items: end
+}
+.align--center {
+	align-items: center
+}
+.justify--center {
+	justify-content: center;
+}
+
