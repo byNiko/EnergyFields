@@ -15,6 +15,16 @@
 .mt-4 {
 	margin-top: var(--grid-spacer);
 }
+.mt-section {
+	margin-top: var(--section-spacer);
+}
+.mb-section {
+	margin-bottom: var(--section-spacer);
+}
+.my-section {
+	@extend .mt-section;
+	@extend .mb-section;
+}
 .mb-4 {
 	margin-bottom: var(--grid-spacer);
 }

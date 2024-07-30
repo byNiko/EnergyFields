@@ -11,6 +11,7 @@ module.exports = {
 	entry: {
 		...getWebpackEntryPoints(),
 		main: './src/index.js',
+		mapLeaflet: './src/scripts/mapLeaflet.js',
 	},
 	output: {
 		path: path.resolve( __dirname, 'dist' ),

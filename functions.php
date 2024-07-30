@@ -127,6 +127,7 @@ add_action('widgets_init', 'byniko_widgets_init');
 /**
  * Enqueue scripts and styles.
  */
+
 function byniko_scripts() {
 	// asset versioning from npm build process
 	$asset_file = include(get_stylesheet_directory() . '/dist/main.asset.php');
@@ -151,6 +152,7 @@ function byniko_scripts() {
 	);
 
 
+
 	wp_enqueue_script(
 		'byniko-script',
 		get_template_directory_uri() . '/dist/main.js',
@@ -158,8 +160,37 @@ function byniko_scripts() {
 		$asset_file['version'],
 		true
 	);
-
-
+	if (is_front_page()) {
+		wp_enqueue_style(
+			'byniko-leaflet-style',
+			get_template_directory_uri() . '/dist/mapLeaflet.css',
+			array(),
+			false
+		);
+		// wp_enqueue_style(
+		// 	'byniko-leaflet-style',
+		// 	"//unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+		// 	array(),
+		// 	false,
+		// 	false
+		// );
+		/* The `wp_enqueue_script` function you provided is used to enqueue a script in WordPress. Let's
+		break down the parameters: */
+		// wp_enqueue_script(
+		// 	'byniko-leaflet-js',
+		// 	"//unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+		// 	array(),
+		// 	false,
+		// 	true
+		// );
+		wp_enqueue_script(
+			'byniko-leaflet-map',
+			get_template_directory_uri() . '/dist/mapLeaflet.js',
+			array(),
+			$asset_file['version'],
+			true
+		);
+	}
 
 	if (is_singular() && comments_open() && get_option('thread_comments')) {
 		wp_enqueue_script('comment-reply');
@@ -190,14 +221,14 @@ function byniko_custom_event_post_title_and_slug($post_id) {
 	$my_post = array();
 	$my_post['ID'] = $post_id;
 	if (get_post_type() == 'event') {
-		
+
 		$artwork = get_field('art_work', $post_id);
 		$daytime = get_field('start', $post_id);
 		$my_post['post_title'] = $artwork[0]->post_title . ': ' . $daytime;
 		$my_post['post_name'] = sanitize_title($my_post['post_title']);
-		remove_action( 'save_post', 'byniko_custom_event_post_title_and_slug', 10, 3 );
+		remove_action('save_post', 'byniko_custom_event_post_title_and_slug', 10, 3);
 		wp_update_post($my_post);
-		add_action( 'save_post', 'byniko_custom_event_post_title_and_slug', 10, 3 );
+		add_action('save_post', 'byniko_custom_event_post_title_and_slug', 10, 3);
 	}
 }
 
@@ -205,66 +236,115 @@ function byniko_custom_event_post_title_and_slug($post_id) {
 add_action('acf/save_post', 'byniko_custom_event_post_title_and_slug', 25);
 
 
-function byniko_get_events($args=[]){
-	$paged = (get_query_var('paged')) ? get_query_var('paged') : 0;
-	$postsPerPage = 2;
+function byniko_get_events_old($args = []) {
+	// Find today’s date in Ymd format.
+	$date_now = date('Y-m-d H:i:s');
+	$paged = (get_query_var('paged')) ?: 0;
+	$postsPerPage = -1;
 	$postOffset = $paged * $postsPerPage;
 	// get all locations
 	$default_args = array(
 		'posts_per_page'  => $postsPerPage,
 		'offset'          => $postOffset,
 		'post_type' => 'event',
-		'status' => 'publish'
+		'status' => 'publish',
+		'order'          => 'ASC',
+		'orderby'        => 'meta_value',
+		'meta_key'       => 'start',
+		'meta_type'      => 'DATETIME',
+		'meta_query' => array(
+			array(
+				'key'     => 'start',
+				'compare' => '>=',
+				'value'   => $date_now,
+			)
+		)
+
+
 	);
 	$args = array_merge($default_args, $args);
 	return get_posts($args);
 	// return new WP_Query($args);
 }
 
-function byniko_pre_get_events( \WP_Query $query ) {
-    if ( is_admin() ) {
-        return; // we want the frontend! exit if it's WP Admin
-    }
-    if ( !$query->is_main_query() ) {
-        return; // we want the main query!
-    }
-    if ( ! is_page( 'Special Events' ) ) {
-        return; // we only want the movie archives
-    }
-    // On the movie archive, show 50 posts
-    // $query->set( 'post_type', 'event' );
+
+function pr($var) {
+	print '<pre>';
+	print_r($var);
+	print '</pre>';
 }
 
-add_action( 'pre_get_posts', 'byniko_pre_get_events', 1 );
+function byniko_pre_get_events(\WP_Query $query) {
+	if (is_admin()) {
+		return; // we want the frontend! exit if it's WP Admin
+	}
+	if (!$query->is_main_query()) {
+		return; // we want the main query!
+	}
+	if (!is_page('Special Events')) {
+		return;
+	}
+	// On the movie archive, show 50 posts
+	// $query->set( 'post_type', 'event' );
+}
 
-function add_slug_body_class( $classes ) {
+add_action('pre_get_posts', 'byniko_pre_get_events', 1);
+
+function add_slug_body_class($classes) {
 	global $post;
-	if ( isset( $post ) ) {
-	$classes[] = $post->post_type . '-' . $post->post_name;
+	if (isset($post)) {
+		$classes[] = $post->post_type . '-' . $post->post_name;
 	}
 	return $classes;
-	}
-	add_filter( 'body_class', 'add_slug_body_class' );
+}
+add_filter('body_class', 'add_slug_body_class');
 
-	function get_arrow($size = ''){
-		return sprintf(
-			"<div class='arrow-parts__wrapper %s'>
+function get_arrow($size = 'md') {
+	return sprintf(
+		"<div class='arrow-parts__wrapper %s'>
 		<div class='arrow_parts'>
 			<div class='arrow-parts__circle'></div>
 			<div class='arrow-parts__line'></div>
 			<div class='arrow-parts__spade'></div>
 		</div>
 	</div>",
-		$size);
-	
-	}
+		$size
+	);
+}
 
-	function get_arrow_with_date($start_date, $end_date){
-		$arrow_html = get_arrow();
-		$format = "
-<div class='date-arrow__date' style='margin-right: 1rem'>%s</div>
+function get_arrow_with_date($start_date, $end_date, $size='fz-md') {
+	$arrow_html = get_arrow();
+	$format = '
+	<div class="date-arrow__wrapper %4$s">
+<div class="date-arrow__date" style="margin-right: 1rem">%s</div>
 			%s
-			<div class='date-arrow__date' style='margin-left: .5rem'>%s</div>
-		";
-		return sprintf($format,$start_date, $arrow_html, $end_date);
+			<div class="date-arrow__date" style="margin-left: .5rem">%s</div>
+			</div>
+		';
+	return sprintf($format, $start_date, $arrow_html, $end_date, $size);
+}
+
+
+function add_style_attributes($html, $handle) {
+	if ('byniko-leaflet-style' === $handle) {
+		$str = 'integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="  crossorigin=""';
+		return str_replace("rel", "$str rel", $html);
 	}
+	return $html;
+}
+// add_filter('style_loader_tag', 'add_style_attributes', 10, 2);
+
+function add_script_attr($tag, $handle) {
+	if ('byniko-leaflet-js' === $handle) {
+		$str = 'integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""';
+		return str_replace("src", "$str src", $tag);
+	}
+	return $tag;
+}
+// add_filter('script_loader_tag', 'add_script_attr', 10, 2);
+
+
+add_filter( 'nav_menu_link_attributes', function($atts) {
+	$atts['class'] = "nav-link";
+	return $atts;
+}, 100, 1 );

@@ -12,6 +12,8 @@
 @use "navigation";
 @use "pages/single_art_work";
 @use "event";
+@use "./page-transitions";
+// @use "./view-transitions";
 
 .single-art-work {
 	article {

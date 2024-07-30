@@ -7,7 +7,10 @@
 	src: url('../fonts/Helvetica_Neue_Condensed_Bold.woff');
 }
 html,body {
-	line-height: 1.6;
+	line-height: 1.3;
+}
+.h1,.h2 {
+	margin-bottom: var(--vert-heading-spacer);
 }
 .h1,
 .h2,
@@ -40,4 +43,30 @@ html,body {
 }
 .fz-md {
 	font-size: var(--fz-md);
+}
+.fz-lg {
+	font-size: var(--fz-lg);
+}
+.fz-xl {
+	font-size: var(--fz-xl);
+}
+
+.heading-sm {
+	font-size: var(--fz-hlg);
+	margin-bottom: var(--vert-body-spacer);
+}
+
+a:not(.block-content-link):not(.button):not(.art-work__card ):not(.nav-link):not(.inpage-link) {
+	color: var(--color-accent);
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: .3em;
+	transition: color .2s, border-color .2s;
+	&:hover {
+		color: var(--color-text);
+	}
+}
+
+p:last-of-type,dl:last-of-type{
+	margin-bottom: 0;
 }

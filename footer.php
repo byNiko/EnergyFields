@@ -1,15 +1,20 @@
-<?php if(!is_front_page()) : ?>
-</div><!-- inner-page -->
-</div>
+<?php if (!is_front_page()) : ?>
+	<?php //if(!is_front_page()): 
+	?>
+	<div class=" d-flex">
+		<a href="#page" class="button button--accent ml-a">Back to top</a>
+	</div>
+	<?php //endif; 
+	?>
+	</div><!-- inner-page -->
+	</div>
 <?php endif; ?>
-
+</div> <!-- swup - page transition -->
 <footer id="colophon" class="site-footer">
 	<div class="container">
-	<div class="site-info d-flex">
-		<?php if(!is_front_page()): ?>
-		<button class="button button-accent ml-a">Back to top</button>
-		<?php endif; ?>
-	</div><!-- .site-info -->
+		<div class="site-info d-flex">
+
+		</div><!-- .site-info -->
 	</div>
 </footer><!-- #colophon -->
 

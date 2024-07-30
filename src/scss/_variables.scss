@@ -1,16 +1,17 @@
 
 	@supports (font-size: clamp(1rem, 1vi, 1rem)) {
 		:root {
-			  --fz-xxs: clamp(0.51rem, -0.02vi + 0.52rem, 0.5rem);
-			  --fz-xs: clamp(0.64rem, 0.05vi + 0.63rem, 0.67rem);
-			  --fz-sm: clamp(0.8rem, 0.17vi + 0.76rem, 0.89rem);
-			  --fz-md: clamp(1rem, 0.34vi + 0.91rem, 1.19rem);
-			  --fz-hmd: clamp(1.15rem, 0.5vi + 0.98rem, 1.19rem);
-			  --fz-lg: clamp(1.25rem, 0.61vi + 1.1rem, 1.4rem);
-			  --fz-xl: clamp(1.56rem, 1vi + 1.31rem, 2.11rem);
-			  --fz-xxl: clamp(1.95rem, 1.56vi + 1.56rem, 2.81rem);
-			  --fz-xxxl: clamp(2.44rem, 2.38vi + 1.85rem, 3.75rem);
-			  --fz-xxxxl: clamp(3.05rem, 3.54vi + 2.17rem, 5rem);
+			  --fz-xxs: clamp(0.51rem, -0.02cqi + 0.52rem, 0.5rem);
+			  --fz-xs: clamp(0.64rem, 0.05cqi + 0.63rem, 0.67rem);
+			  --fz-sm: clamp(0.8rem, 0.17cqi + 0.76rem, 0.89rem);
+			  --fz-md: clamp(1rem, 0.25cqi + .91rem, 1.19rem);
+			  --fz-hmd: clamp(1.15rem, 0.5cqi + 0.98rem, 1.19rem);
+			  --fz-lg: clamp(1.25rem, 0.61cqi + 1.1rem, 1.4rem);
+			  --fz-hlg: clamp(1.5rem, 0.61cqi + 1.1rem, 1.4rem);
+			  --fz-xl: clamp(1.56rem, 1cqi + 1.31rem, 2.11rem);
+			  --fz-xxl: clamp(1.95rem, 1.56cqi + 1.56rem, 2.81rem);
+			  --fz-xxxl: clamp(2.44rem, 2.38cqi + 1.85rem, 3.75rem);
+			  --fz-xxxxl: clamp(3.05rem, 3.54cqi + 2.17rem, 5rem);
 			  --fz-display: var(--fz-xxxxl);
 		}
 	  }
@@ -68,13 +69,18 @@
 	--spacer-13: calc(13 * var(--spacer-1));
 
 
+
 // SEMANTIC
 	--black:#000;
 	--white: #FFF;
 	--bone: #EFEFEF;
 	--color-accent: #857550;
 	
-		--grid-spacer: 1.5rem;
+		--grid-spacer: var(--spacer-10);
+		--section-spacer: calc(2 * var(--grid-spacer));
+		--vert-body-spacer: var(--spacer-5);
+		--vert-heading-spacer: var(--spacer-4);
+		--gap: var(--grid-spacer);
 		--ff-body: "Inter", "Poppins", sans-serif;
 		--ff-header: "Vibrate", sans-serif;
 		--ff-display: "Vibrate", sans-serif;

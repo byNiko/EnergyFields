@@ -15,21 +15,9 @@
 
 get_header();
 ?>
-<div class="container">
-	<header class="entry-header ">
-	
-		
-	</header><!-- .entry-header -->
-	
 
-	<div class="flex-row gap">
-		
-		<main id="primary" class="site-main">
-			
 
-		</main><!-- #main -->
-	</div>
-</div>
+<div id="map-slider" class="map-slider"></div>
 <div id="map-filter" class="map-filter">
 	<div class="map-filter__items d-flex">
 		<button class="map-filter__item">Filter</button>
@@ -39,6 +27,12 @@ get_header();
 		<button class="map-filter__item">Filter</button>
 	</div>
 </div>
+<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+	 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script> -->
 <?php
 
 get_footer();

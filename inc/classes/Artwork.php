@@ -1,20 +1,56 @@
 <?php
 
-class Artwork{
+class Artwork {
 	private $main_image_id;
 	private $image_caption;
 	private $post;
 	private $ID;
 	public $admission;
-	public function __construct($post)
-	{
+	public $is_exhibition;
+	public $is_event;
+	public $has_events;
+	public $is_spotlight;
+	public function __construct($post) {
 		$this->post = $post;
 		$this->ID = $post->ID;
-		$this->main_image_id = get_field('main_image', $post);	
-		$this->admission = get_field('admission', $post);	
+		$this->main_image_id = get_field('main_image', $post);
+		$this->admission = get_field('admission', $post);
+		// $this->is_exhibition = has_term('exhibition', 'art-work-type', $post);
+		// $this->is_event = has_term('event', 'art-work-type', $post);
+		$this->has_events = get_field('has_events', $post);
+		$this->is_exhibition = !$this->has_events;
+		$this->is_event = $this->has_events;
+		$this->is_spotlight = get_field('is_spotlight', $post);
 	}
 
-	public function get_card(){
+	public function get_all_events() {
+		return get_field('events', $this->post);
+	}
+	public function get_event_day_of_week($date){
+		echo $date;
+		$d = new DateTime(($date));
+		return $d;
+	}
+
+	public function get_future_events(){
+		$timesArr = $this->get_event_times();
+		function test_future($time) {
+			$date_now = strtotime(date('Y-m-d H:i:s'));
+			return strtotime($time['start']) >= $date_now;
+		}
+		$filtered = array_filter($timesArr, "test_future");
+		return $filtered;
+	}
+
+	public function get_event_times(){
+		$timesArr = $this->get_all_events();
+		usort($timesArr, function($a, $b) {
+			return strtotime($a['start']) <=> strtotime($b['start']);
+		});
+		return $timesArr;
+	}
+
+	public function get_card() {
 		$format = "<a href='%s' class='art-work__card '>
 		<figure class='has-matte'>
 			<div class='art-work__main-img-wrapper'>
@@ -25,37 +61,37 @@ class Artwork{
 			</figcaption>
 		</figure>
 	</a>";
-	return sprintf($format,  
-	$this->get_permalink(),
-	$this->get_main_image('medium', array('class' => 'img-fluid')),
-	$this->get_title()
-	);
-	
+		return sprintf(
+			$format,
+			$this->get_permalink(),
+			$this->get_main_image('medium', array('class' => 'img-fluid')),
+			$this->get_title()
+		);
 	}
 
-	public function get_main_image($size = 'full', $arr = []){
+	public function get_main_image($size = 'full', $arr = []) {
 		return wp_get_attachment_image($this->main_image_id, $size, null, $arr);
 	}
 
-	public function get_image_caption(){
+	public function get_image_caption() {
 		return get_field('image_caption', $this->post);
 	}
 
-	public function get_description(){
+	public function get_description() {
 		return get_the_content($this->ID);
 	}
 
-	public function get_artists(){
+	public function get_artists() {
 		return get_field('artists', $this->ID);
 	}
-	public function get_locations(){
+	public function get_locations() {
 		return get_field('location', $this->ID);
 	}
 
-public function get_permalink(){
-	return get_permalink($this->ID);
-}
-public function get_title(){
-	return $this->post->post_title;
-}
+	public function get_permalink() {
+		return get_permalink($this->ID);
+	}
+	public function get_title() {
+		return $this->post->post_title;
+	}
 }

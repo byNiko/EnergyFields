@@ -18,7 +18,6 @@ get_header();
 <div class="container">
 	<header class="entry-header ">
 		<?php the_title('<h1 class="h1 entry-title has-arrow">', '</h1>'); ?>
-		
 	</header><!-- .entry-header -->
 	
 

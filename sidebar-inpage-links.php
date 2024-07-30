@@ -2,7 +2,7 @@
 
 function byniko_make_inpage_link($link, $sanitized) {
 	// Format the anchor tag
-	$class = "inpage-link button button--text";
+	$class = "inpage-link button--text";
 	return sprintf(
 		'<a href="%s"%s>%s</a>',
 		$sanitized,
@@ -20,6 +20,7 @@ if (have_rows('page_content') || count($args)) :
 			while (have_rows('page_content')) : the_row();
 				$link = get_sub_field('section_link_text');
 				$sanitized = "#" . sanitize_title($link);
+				if($link && $sanitized)
 				echo byniko_make_inpage_link($link, $sanitized);
 			endwhile;
 

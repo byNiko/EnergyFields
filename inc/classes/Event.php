@@ -30,11 +30,19 @@ class Event extends Artwork{
 			// 'posts_per_page' => 8,
 			'numberposts' => -1,
 			'post_type' => 'event',
-			'status' => 'publish'
-		);
+			'status' => 'publish',
+			'meta_query' => array(
+        array(
+            'key'     => 'start_date',
+            'compare' => '>=',
+            'value'   => $today,
+        ),
+		)
+	);
 		$args = array_merge($default_args, $args);
 		
 		$events = get_posts($args);
 		return $events;
 	}
+
 }

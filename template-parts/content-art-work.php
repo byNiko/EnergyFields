@@ -46,7 +46,7 @@ if($works = get_field('related_art_work')):
 <section id="related-work">
 	<div class="container">
 		<header>
-		<h2 class="h2">Related Work</h2>
+		<h2 class="h2">More Works</h2>
 		<?php echo get_arrow('sm');?>
 		</header>
 		<div class="flex-row __3x flex-wrap gap mt-1">

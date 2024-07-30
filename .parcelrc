@@ -1,0 +1,7 @@
+{
+	"transformers": {
+    "*.css": [
+      "@parcel/transformer-css"
+    ]
+  }
+}
