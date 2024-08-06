@@ -61,3 +61,17 @@
   .easy-button-container {
 	transform: translatey(350%) translatex(300%);
   }
+.marker {
+	opacity: 0;
+	background: orange;
+	border-radius: 50%;
+	animation: markerAnimation .51s  ease-in-out .0s 1 forwards;
+}
+  @keyframes markerAnimation {
+	0% {
+		opacity: 0
+	}
+	100% {
+		opacity: 1
+	}
+  }

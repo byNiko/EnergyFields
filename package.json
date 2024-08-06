@@ -33,10 +33,12 @@
 		"leaflet-d3-combain": "^6.0.1",
 		"leaflet-easybutton": "^2.4.0",
 		"leaflet-tag-filter-button": "^0.0.5",
+		"leaflet.markercluster": "^1.5.3",
 		"leaflet.repeatedmarkers": "^0.1.1",
 		"nouislider": "^15.8.1",
 		"papaparse": "^5.4.1",
 		"sheets2geojson": "^0.0.4",
-		"swup": "^4.6.1"
+		"swup": "^4.6.1",
+		"wnumb": "^1.2.0"
 	}
 }

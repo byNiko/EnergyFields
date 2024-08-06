@@ -32,6 +32,11 @@ html,body {
 	}
 }
 
+.normal-font,
+.ff-normal {
+	font-family: var(--ff-header-normal);
+}
+
 .h1 {font-size: var(--fz-xxl);}
 .h2 {font-size: var(--fz-xl);}
 .h3 {font-size: var(--fz-lg);}

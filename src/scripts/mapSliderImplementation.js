@@ -1,10 +1,23 @@
+
+import L from 'leaflet';
+import noUiSlider from 'nouislider';
+import wNumb from 'wnumb';
 // constants for the slider
 const slider = document.getElementById( 'map-slider' );
-const default_start_date = 'Jan 1,2020';
-const default_end_date = 'Dec 1,2020';
+const defaultStartDate = 'Jan 1,2020';
+const defaultEndDate = 'Dec 1,2020';
+const weekdays = [
+	'Sunday', 'Monday', 'Tuesday',
+	'Wednesday', 'Thursday', 'Friday',
+	'Saturday',
+];
+
+const monthsShort = [
+	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
 
 // TO-DO: need to change the months to use the start and end dates...
-monthVals = months_short.map( ( month ) => Date.parse( month + ' 1, 2020' ) );
+const monthVals = monthsShort.map( ( month ) => Date.parse( month + ' 1, 2020' ) );
 
 // implement the noUiSlider
 noUiSlider.create( slider, {
@@ -12,12 +25,12 @@ noUiSlider.create( slider, {
 	behaviour: 'tap-drag',
 	connect: true,
 	range: {
-		min: timestamp( default_start_date ),
-		max: timestamp( default_end_date ),
+		min: timestamp( defaultStartDate ),
+		max: timestamp( defaultEndDate ),
 	},
 	direction: 'ltr',
 	step: 24 * 60 * 60 * 1000,
-	start: [ timestamp( default_start_date ), timestamp( default_end_date ) ],
+	start: [ timestamp( defaultStartDate ), timestamp( defaultEndDate ) ],
 	format: wNumb( {
 		decimals: 0,
 	} ),
@@ -27,12 +40,12 @@ noUiSlider.create( slider, {
 		format: {
 			to( month ) {
 				// custom function to format the months.
-				const target_month = new Date( month );
+				const targetMonth = new Date( month );
 				if ( window.innerWidth > 740 ) {
-					month_label = months_short[ target_month.getMonth() ];
-					console.log( target_month.getMonth() );
-					console.log( month_label );
-					return month_label;
+					const monthLabel = monthsShort[ targetMonth.getMonth() ];
+					console.log( targetMonth.getMonth() );
+					console.log( monthLabel );
+					return monthLabel;
 				}
 
 				return [];
@@ -46,7 +59,7 @@ noUiSlider.create( slider, {
 
 // Create a string representation of the date.
 function formatDate( date ) {
-	return months_short[ date.getMonth() ] + ', ' +
+	return monthsShort[ date.getMonth() ] + ', ' +
         date.getFullYear();
 }
 
@@ -71,10 +84,14 @@ const Slider = L.Control.extend( {
 map.addControl( new Slider() );
 
 slider.noUiSlider.on( 'update', function( values, handle ) {
-	dateValues[ handle ].innerHTML = formatDate( new Date( +values[ handle ] ) );
+	// dateValues[ handle ].innerHTML = formatDate( new Date( +values[ handle ] ) );
 	const new_times = slider.noUiSlider.get();
 	// addDataToHexMap(geo_features,new_times[0],new_times[1])
 	console.log( dateValues );
 	dateValues[ 2 ].innerHTML = addDataToHexMap( geo_features, new_times[ 0 ], new_times[ 1 ] );
 	// console.log(values[handle])
 } );
+
+function timestamp( str ) {
+	return new Date( str ).getTime();
+}

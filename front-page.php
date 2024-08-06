@@ -18,6 +18,23 @@ get_header();
 
 
 <div id="map-slider" class="map-slider"></div>
+<div id="hovered">
+					<h2>
+						<h4>
+							<div>
+								<span id="event-start">Jan, 1800</span> - <span id="event-end">Dec, 2020</span>
+							</div>
+						</h4>
+						<h3 id="total">Total Events</h3><h2 id="event-total"></h2>
+						<h3>
+							<label> </label>
+						</h3>
+						<h3>
+							<span class="count-label"></span>
+							<span class="count"></span>
+						</h3>
+					</h2>
+				</div>
 <div id="map-filter" class="map-filter">
 	<div class="map-filter__items d-flex">
 		<button class="map-filter__item">Filter</button>

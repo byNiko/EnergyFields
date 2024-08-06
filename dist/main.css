@@ -778,6 +778,21 @@ progress {
   transform: translatey(350%) translatex(300%);
 }
 
+.marker {
+  opacity: 0;
+  background: orange;
+  border-radius: 50%;
+  animation: markerAnimation 0.51s ease-in-out 0s 1 forwards;
+}
+
+@keyframes markerAnimation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
 .button {
   --color: var(--color-accent);
   --background-color: transparent;
@@ -1033,6 +1048,11 @@ html, body {
 .h6.ff-display {
   font-family: var(--ff-header);
   letter-spacing: 0;
+}
+
+.normal-font,
+.ff-normal {
+  font-family: var(--ff-header-normal);
 }
 
 .h1 {
