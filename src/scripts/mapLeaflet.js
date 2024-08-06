@@ -70,14 +70,16 @@ const svgIcon = `
   </svg>
 `;
 const circleIcon = `
- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
+ <svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
      <circle r="1.5" cx="5" cy="5" fill="hsl(170 60% 30% / .5)" stroke="hsl(230 50% 80% / .25)" stroke-width="1" />
   </svg>
 `;
+const invisibleIcon = '<div></div>';
 const divIcon = L.divIcon( {
-	className: 'marker',
+	className: 'invisible_marker',
+	// className: 'marker',
+	// html: invisibleIcon,
 	html: circleIcon,
-	// html: svgIcon,
 	iconSize: [ 40, 40 ],
 	iconAnchor: [ 12, 24 ],
 	popupAnchor: [ 7, -16 ],
@@ -104,14 +106,20 @@ function makeMarker( f ) {
 	}
 	return m;
 }
-
+map.on( 'click', ( e ) => {
+	// if we clicked on the infoBox - do nothing
+	if ( Boolean( e.originalEvent.target.closest( '.infoBox' ) ) ) {
+		return;
+	}
+	showInfo( e );
+} );
 function showInfo( e, f ) {
 	L.DomEvent.stopPropagation( e ); // stop marker click from hitting 'map' object.
-	if ( infoBox.markerClicked !== f.properties.id ) {
-		infoBox.update( f );
-	} else {
-		infoBox.update();
+	// if we clicked the same marker - clear infobox
+	if ( f?.properties?.id && infoBox.markerClicked === f.properties.id ) {
+		f = false;
 	}
+	infoBox.update( f );
 }
 
 // put all features into one array
@@ -120,10 +128,10 @@ const verifiedFeatures = getVerifiedFeatures( allFeatures );
 
 const theGeoJson = L.geoJSON( verifiedFeatures, {
 	pointToLayer( point, latLng ) {
-		const c = new Circle( latLng, 100000 );
-		c.addEventListener( 'click', ( e ) => {
-			showInfo( e, point );
-		} );
+		// const c = new Circle( latLng, 100000 );
+		// c.addEventListener( 'click', ( e ) => {
+		// 	showInfo( e, point );
+		// } );
 		const d = makeMarker( point );
 		return d;
 	},
@@ -283,11 +291,43 @@ function getVerifiedFeatures( features ) {
 			// move markers back over the anti-meridian
 			const lng = itt.geometry.coordinates[ 0 ];
 			itt.geometry.coordinates[ 0 ] = L.Util.wrapNum( lng, [ -360, 0 ], true );
+			itt.properties.mag = normalizeMagnitude( itt );
 
 			acc.push( itt );
 		}
 		return acc;
 	}, [] );
+}
+
+function normalizeMagnitude( feature ) {
+	const type = feature.properties.tags;
+	const magnitude = parseInt( feature.properties.Magnitude );
+
+	let mag = 0;
+	switch ( type ) {
+		case 'Earthquakes':
+			// max richter scale 10
+			mag = magnitude / 10;
+
+			break;
+		case 'Volcanoes':
+			// max VEI is 8
+			mag = magnitude / 8;
+
+			break;
+		case 'Tsunamis':
+			// max TSE is 4
+			mag = magnitude / 4;
+			break;
+		case 'Weapons':
+			// max is 180
+			mag = magnitude / 180;
+			break;
+		default:
+			console.log( 'Not a valid energy type' );
+	}
+	console.log( 'raw', magnitude, mag );
+	return mag;
 }
 
 /**
@@ -425,3 +465,61 @@ function updateMapMarkers( mapObj, geoJson, values ) {
 	} );
 }
 
+import 'leaflet.heat';
+
+const hMapArr = getHeatMapArr( verifiedFeatures );
+console.log( hMapArr );
+function getHeatMapArr( featuresArr ) {
+	return featuresArr.map( ( f ) => {
+		return [ f.geometry.coordinates[ 0 ], f.geometry.coordinates[ 1 ], f.properties.mag ];
+	} );
+}
+
+const colors = {
+	a: {
+		0: 'Black',
+		0.33: 'DarkRed',
+		0.66: 'Yellow',
+		1: 'White',
+	},
+	b: { 0.00: 'white', 0.5: '#333', .8: 'black' },
+	c: {
+		0: 'Black',
+		0.4: 'Purple',
+		0.6: 'Red',
+		0.8: 'Yellow',
+		1: 'White',
+	},
+	d: {
+		0.00: 'rgb(255,0,255)',
+		0.25: 'rgb(0,0,255)',
+		0.50: 'rgb(0,255,0)',
+		0.75: 'rgb(255,255,0)',
+		1.00: 'rgb(255,0,0)',
+	  },
+};
+
+const heatObj = L.heatLayer(
+	hMapArr,
+	{
+		minOpacity: .5,
+		radius: 25,
+		blur: 15,
+		gradient: colors.b,
+	} );
+heatObj.addTo( map );
+
+timeSlider.on( 'slide', ( values, handle ) => {
+	updateHeatMap( heatObj, verifiedFeatures, values );
+} );
+
+function updateHeatMap( heatLayer, featuresArr, values ) {
+	// timeSlider.get( true )
+	const newStart = new Date( parseInt( values[ 0 ] ) );
+	const newEnd = new Date( parseInt( values[ 1 ] ) );
+	const filteredHeatArr = featuresArr.filter( ( feature ) => {
+		return dateInRange( feature.properties.Date, newStart, newEnd );
+	} );
+
+	heatLayer.setLatLngs( getHeatMapArr( filteredHeatArr ) );
+}
