@@ -1,42 +1,24 @@
-@use "variables";
+// @use "variables";
 // @forward "normalize";
+@forward './abstracts/' ;
 @use "reboot";
 @use "wp-defaults";
 @use "utilities";
-@use "./components/index";
 @use "spacing";
-@use "base";
 @use "typography";
+@use "base";
 @use "grid";
 @use "sidebar";
 @use "navigation";
-@use "pages/single_art_work";
-@use "event";
+@use "./pages/single_art_work";
+@use "./event";
+@use "./components/index";
 @use "./page-transitions";
+@use "../../node_modules/hamburgers/_sass/hamburgers/hamburgers.scss" with (
+	$hamburger-layer-color :black,
+  $hamburger-padding-x: 20px,
+  $hamburger-padding-y: 15px,
+$hamburger-layer-border-radius : 4px,
+  $hamburger-types : (slider),
+);
 // @use "./view-transitions";
-
-.single-art-work {
-	article {
-		display: flex;
-    flex-direction: column;
-    gap: 2rem;
-	}
-}
-.sidebar__art-work {
-	font-size: calc(.95 * var(--fz-sm));
-	text-transform: uppercase;
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacer-3);
-
-	.sidebar__title {
-		font-weight: 400;
-		font-size: calc(.75 * var(--fz-sm));
-		color: var(--color-accent);
-	}
-
-	.sidebar__content {
-		font-weight: 500;
-		line-height: 1.23
-	}
-}

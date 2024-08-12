@@ -1,3 +1,4 @@
+@use './abstracts/mixins' as * ;
 .page-special-events .inner-page {
 	background: transparent;
 }
@@ -17,17 +18,29 @@
 
 .event-card__inner {
 	display: grid;
-    grid-template-columns: 150px 1fr 200px;
+   
     gap: var(--gap);
+	@include bp(lg){
+		grid-template-columns: 150px 1fr 200px;
+	}
 	& > div {
 		display : flex;
+		@include bp(lg){
 		flex-direction: column;
+		}
 	}
 
 	.event-card__location {
 		margin-top: auto;
 		font-family: var(--ff-header-normal);
 	}
+}
+
+.event-card__daytime-wrap {
+	gap: 1em;
+	@include bp(lg){
+	gap:0;
+}
 }
 .event-card__day-of-week,
 .event-card__date,

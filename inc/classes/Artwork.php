@@ -50,9 +50,9 @@ class Artwork {
 		return $timesArr;
 	}
 
-	public function get_card() {
-		$format = "<a href='%s' class='art-work__card '>
-		<figure class='has-matte'>
+	public function get_card($class = "") {
+		$format = "<a href='%s' class='art-work__card'>
+		<figure class='has-matte %s'>
 			<div class='art-work__main-img-wrapper'>
 				%s
 			</div>
@@ -64,6 +64,7 @@ class Artwork {
 		return sprintf(
 			$format,
 			$this->get_permalink(),
+			$class,
 			$this->get_main_image('medium', array('class' => 'img-fluid')),
 			$this->get_title()
 		);

@@ -1,3 +1,4 @@
+@use './abstracts/mixins' as *;
 .d-flex {
 	display: flex;
 }
@@ -46,3 +47,13 @@
 	justify-content: center;
 }
 
+.box-shadow {
+	box-shadow: var(--box-shadow);
+}
+
+.d-flex--med {
+	display: none!important;
+	@include bp(md){
+		display: flex!important;
+	}
+}

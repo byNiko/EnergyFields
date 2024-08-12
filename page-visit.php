@@ -33,24 +33,25 @@ $allLocations = get_posts($default_args);
 				</section>
 			<?php endif; ?>
 			<?php
+			$classCount = 0;
 			if ($allLocations) :
 				foreach ($allLocations as $l) :
+					$section_class = $classCount>0? "mt-section" : '';
+					$classCount++;
 					$location = new Location($l); ?>
-					<section>
+					<section class="<?= $section_class;?> ">
 						<?php
 						echo $location->get_featured_image('full', array('class' => "img-fluid"));
 						?>
 						<div id="<?= sanitize_title($location->get_short_name()); ?>" class="scroll-target">
-							<h2 class="h2">
+							<h2 class="h2 section-title">
 								<?= $location->get_name(); ?>
 							</h2>
 							<?php if ($hours = $location->get_hours()) : ?>
 								<div class="content">
-									<div class="h3">Hours</div>
-									<div class="">
-										<?
-										foreach ($hours as $hour) :
-										?>
+									<div class="h3 vert-heading-spacer--top">Hours</div>
+									<!-- <div class=""> -->
+										<?php foreach ($hours as $hour) : ?>
 											<div class="location__hours">
 												<span class="day"><?= $hour['days']; ?> </span>
 												<span class="times">
@@ -59,18 +60,16 @@ $allLocations = get_posts($default_args);
 													<span class="time close"><?= $hour['close']; ?> </span>
 												</span>
 											</div>
-										<?php
-										endforeach;
-										?>
-									</div>
+										<?php endforeach; ?>
+									<!-- </div> -->
 								</div>
 							<?php endif; ?>
-							<?php if ($address = $location->get_address()) : 	?>
+							<?php if ($address = $location->get_address()) :?>
 								<div class="content ">
-									<div class="h3">
+									<div class="h3 vert-heading-spacer--top">
 										Address
 									</div>
-									<div class="">
+									<!-- <div class=""> -->
 										<?php if ($address['name']) : ?>
 											<div class="address">
 												<?= $address['name']; ?>
@@ -82,16 +81,16 @@ $allLocations = get_posts($default_args);
 										<div class="address">
 											<?= $address['city']; ?> <?= $address['state']; ?>, <?= $address['zip_code']; ?>
 										</div>
-									</div>
+									<!-- </div> -->
 								</div>
 							<?php endif; ?>
 							<?php
 							if (have_rows('content_repeater', $location->ID)) : while (have_rows('content_repeater', $location->ID)) : the_row();
 							?>
 									<div class="content">
-										<div class="h3"><?php the_sub_field('section_title'); ?></div>
+										<div class="h3 vert-heading-spacer--top"><?php the_sub_field('section_title'); ?></div>
 										<div class="columns">
-											<?php the_sub_field('section_content'); ?>
+											<?= get_sub_field('section_content'); ?>
 										</div>
 									</div>
 							<?php

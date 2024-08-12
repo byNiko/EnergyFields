@@ -61,7 +61,7 @@ html,body {
 	margin-bottom: var(--vert-body-spacer);
 }
 
-a:not(.block-content-link):not(.button):not(.art-work__card ):not(.nav-link):not(.inpage-link) {
+a:not(.block-content-link):not(.button):not(.art-work__card ):not(.nav-link):not(.inpage-link):not(.sidebar__content) {
 	color: var(--color-accent);
 	text-decoration: underline;
 	text-decoration-thickness: 2px;
@@ -71,7 +71,16 @@ a:not(.block-content-link):not(.button):not(.art-work__card ):not(.nav-link):not
 		color: var(--color-text);
 	}
 }
-
+p {
+	margin-bottom: 1rem;
+	.page-exhibition &{
+	margin-bottom: var(--vert-body-spacer);
+}
+}
 p:last-of-type,dl:last-of-type{
 	margin-bottom: 0;
+}
+
+h2.section-title {
+	border-bottom: 1px solid;
 }

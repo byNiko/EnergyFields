@@ -9,7 +9,7 @@ $art = new Artwork($post);
 				<?= $art->get_image_caption(); ?>
 			</figcaption>
 		</figure>
-		<h1 class="h1 normal-font">
+		<h1 class="h1">
 					<?php the_title(); 	?>
 				</h1>
 				<?php echo get_arrow("md");?>

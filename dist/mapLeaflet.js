@@ -431,6 +431,188 @@ __webpack_async_result__();
 
 /***/ }),
 
+/***/ "./src/scripts/mapHeatlayer.js":
+/*!*************************************!*\
+  !*** ./src/scripts/mapHeatlayer.js ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _mapSimpleHeat__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mapSimpleHeat */ "./src/scripts/mapSimpleHeat.js");
+/* harmony import */ var _mapSimpleHeat__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_mapSimpleHeat__WEBPACK_IMPORTED_MODULE_0__);
+/*
+ (c) 2014, Vladimir Agafonkin
+ Leaflet.heat, a tiny and fast heatmap plugin for Leaflet.
+ https://github.com/Leaflet/Leaflet.heat
+*/
+
+L.HeatLayer = (L.Layer ? L.Layer : L.Class).extend({
+  // options: {
+  //     minOpacity: 0.05,
+  //     maxZoom: 18,
+  //     radius: 25,
+  //     blur: 15,
+  //     max: 1.0
+  // },
+
+  initialize(latlngs, options) {
+    this._latlngs = latlngs;
+    L.setOptions(this, options);
+  },
+  setLatLngs(latlngs) {
+    this._latlngs = latlngs;
+    return this.redraw();
+  },
+  addLatLng(latlng) {
+    this._latlngs.push(latlng);
+    return this.redraw();
+  },
+  setOptions(options) {
+    L.setOptions(this, options);
+    if (this._heat) {
+      this._updateOptions();
+    }
+    return this.redraw();
+  },
+  redraw() {
+    if (this._heat && !this._frame && !this._map._animating) {
+      this._frame = L.Util.requestAnimFrame(this._redraw, this);
+    }
+    return this;
+  },
+  onAdd(map) {
+    this._map = map;
+    if (!this._canvas) {
+      this._initCanvas();
+    }
+    map._panes.overlayPane.appendChild(this._canvas);
+    map.on('moveend', this._reset, this);
+    if (map.options.zoomAnimation && L.Browser.any3d) {
+      map.on('zoomanim', this._animateZoom, this);
+    }
+    this._reset();
+  },
+  onRemove(map) {
+    map.getPanes().overlayPane.removeChild(this._canvas);
+    map.off('moveend', this._reset, this);
+    if (map.options.zoomAnimation) {
+      map.off('zoomanim', this._animateZoom, this);
+    }
+  },
+  addTo(map) {
+    map.addLayer(this);
+    return this;
+  },
+  _initCanvas() {
+    const canvas = this._canvas = L.DomUtil.create('canvas', 'leaflet-heatmap-layer leaflet-layer');
+    const originProp = L.DomUtil.testProp(['transformOrigin', 'WebkitTransformOrigin', 'msTransformOrigin']);
+    canvas.style[originProp] = '50% 50%';
+    const size = this._map.getSize();
+    canvas.width = size.x;
+    canvas.height = size.y;
+    const animated = this._map.options.zoomAnimation && L.Browser.any3d;
+    L.DomUtil.addClass(canvas, 'leaflet-zoom-' + (animated ? 'animated' : 'hide'));
+    this._heat = _mapSimpleHeat__WEBPACK_IMPORTED_MODULE_0___default()(canvas);
+    this._updateOptions();
+  },
+  _updateOptions() {
+    this._heat.radius(this.options.radius || this._heat.defaultRadius, this.options.blur);
+    if (this.options.gradient) {
+      this._heat.gradient(this.options.gradient);
+    }
+    if (this.options.max) {
+      this._heat.max(this.options.max);
+    }
+  },
+  _reset() {
+    const topLeft = this._map.containerPointToLayerPoint([0, 0]);
+    L.DomUtil.setPosition(this._canvas, topLeft);
+    const size = this._map.getSize();
+    if (this._heat._width !== size.x) {
+      this._canvas.width = this._heat._width = size.x;
+    }
+    if (this._heat._height !== size.y) {
+      this._canvas.height = this._heat._height = size.y;
+    }
+    this._redraw();
+  },
+  _redraw() {
+    let data = [],
+      r = this._heat._r,
+      size = this._map.getSize(),
+      bounds = new L.Bounds(L.point([-r, -r]), size.add([r, r])),
+      max = this.options.max === undefined ? 1 : this.options.max,
+      maxZoom = this.options.maxZoom === undefined ? this._map.getMaxZoom() : this.options.maxZoom,
+      v = 1 / Math.pow(2, Math.max(0, Math.min(maxZoom - this._map.getZoom(), 12))),
+      cellSize = r / 2,
+      grid = [],
+      panePos = this._map._getMapPanePos(),
+      offsetX = panePos.x % cellSize,
+      offsetY = panePos.y % cellSize,
+      i,
+      len,
+      p,
+      cell,
+      x,
+      y,
+      j,
+      len2,
+      k;
+
+    // console.time('process');
+    for (i = 0, len = this._latlngs.length; i < len; i++) {
+      p = this._map.latLngToContainerPoint(this._latlngs[i]);
+      if (bounds.contains(p)) {
+        x = Math.floor((p.x - offsetX) / cellSize) + 2;
+        y = Math.floor((p.y - offsetY) / cellSize) + 2;
+        const alt = this._latlngs[i].alt !== undefined ? this._latlngs[i].alt : this._latlngs[i][2] !== undefined ? +this._latlngs[i][2] : 1;
+        k = alt * v;
+        grid[y] = grid[y] || [];
+        cell = grid[y][x];
+        if (!cell) {
+          grid[y][x] = [p.x, p.y, k];
+        } else {
+          cell[0] = (cell[0] * cell[2] + p.x * k) / (cell[2] + k); // x
+          cell[1] = (cell[1] * cell[2] + p.y * k) / (cell[2] + k); // y
+          cell[2] += k; // cumulated intensity value
+        }
+      }
+    }
+    for (i = 0, len = grid.length; i < len; i++) {
+      if (grid[i]) {
+        for (j = 0, len2 = grid[i].length; j < len2; j++) {
+          cell = grid[i][j];
+          if (cell) {
+            data.push([Math.round(cell[0]), Math.round(cell[1]), Math.min(cell[2], max)]);
+          }
+        }
+      }
+    }
+    // console.timeEnd('process');
+
+    // console.time('draw ' + data.length);
+    this._heat.data(data).draw(this.options.minOpacity);
+    // console.timeEnd('draw ' + data.length);
+
+    this._frame = null;
+  },
+  _animateZoom(e) {
+    const scale = this._map.getZoomScale(e.zoom),
+      offset = this._map._getCenterOffset(e.center)._multiplyBy(-scale).subtract(this._map._getMapPanePos());
+    if (L.DomUtil.setTransform) {
+      L.DomUtil.setTransform(this._canvas, offset, scale);
+    } else {
+      this._canvas.style[L.DomUtil.TRANSFORM] = L.DomUtil.getTranslateString(offset) + ' scale(' + scale + ')';
+    }
+  }
+});
+L.heatLayer = function (latlngs, options) {
+  return new L.HeatLayer(latlngs, options);
+};
+
+/***/ }),
+
 /***/ "./src/scripts/mapInfoBox.js":
 /*!***********************************!*\
   !*** ./src/scripts/mapInfoBox.js ***!
@@ -680,8 +862,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var nouislider_dist_nouislider_css__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! nouislider/dist/nouislider.css */ "./node_modules/nouislider/dist/nouislider.css");
 /* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! wnumb */ "./node_modules/wnumb/wNumb.js");
 /* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(wnumb__WEBPACK_IMPORTED_MODULE_14__);
-/* harmony import */ var leaflet_heat__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! leaflet.heat */ "./node_modules/leaflet.heat/dist/leaflet-heat.js");
-/* harmony import */ var leaflet_heat__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(leaflet_heat__WEBPACK_IMPORTED_MODULE_15__);
+/* harmony import */ var _mapHeatlayer_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./mapHeatlayer.js */ "./src/scripts/mapHeatlayer.js");
 var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_9__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_10__]);
 ([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_9__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_10__] = __webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__);
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
@@ -706,6 +887,8 @@ var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_map
 // import minZoom from './mapMinZoom.js';
 
 
+let worldVolcanoes;
+// import { worldVolcanoes } from './mapWorldVolcanoes';
 // import { geoJson } from './mapData';
 
 const initView = {
@@ -805,6 +988,30 @@ function showInfo(e, f) {
 // put all features into one array
 const allFeatures = aggregateFeatures(_mapGoogleData__WEBPACK_IMPORTED_MODULE_10__.allJson);
 const verifiedFeatures = getVerifiedFeatures(allFeatures);
+if (worldVolcanoes) {
+  const worldVolcanosGeoJson = leaflet__WEBPACK_IMPORTED_MODULE_0___default().geoJSON(worldVolcanoes, {
+    pointToLayer(point, latLng) {
+      const lng = leaflet__WEBPACK_IMPORTED_MODULE_0___default().Util.wrapNum(point.geometry.coordinates[0], [-360, 0], true);
+      const lat = point.geometry.coordinates[1];
+      const c = new leaflet__WEBPACK_IMPORTED_MODULE_0__.Circle([lat, lng], 100000);
+      // c.addEventListener( 'click', ( e ) => {
+      // 	showInfo( e, point );
+      // } );
+      // const d = makeMarker( point );
+      return c;
+    }
+  });
+  worldVolcanosGeoJson.addTo(map);
+  let showAllVolcanoes = true;
+  leaflet__WEBPACK_IMPORTED_MODULE_0___default().easyButton('fa-map', function (btn, map) {
+    showAllVolcanoes = !showAllVolcanoes;
+    if (showAllVolcanoes) {
+      map.addLayer(worldVolcanosGeoJson);
+    } else {
+      map.removeLayer(worldVolcanosGeoJson);
+    }
+  }).addTo(map);
+}
 const theGeoJson = leaflet__WEBPACK_IMPORTED_MODULE_0___default().geoJSON(verifiedFeatures, {
   pointToLayer(point, latLng) {
     // const c = new Circle( latLng, 100000 );
@@ -869,7 +1076,10 @@ the button is clicked. */
 leaflet__WEBPACK_IMPORTED_MODULE_0___default().control.tagFilterButton({
   data: allTags,
   icon: '<i class="fa-solid fa-filter"></i>',
-  filterOnEveryClick: true
+  filterOnEveryClick: true,
+  onSelectionComplete(e) {
+    console.log('selected', e);
+  }
 }).addTo(map);
 
 /**
@@ -996,9 +1206,8 @@ function normalizeMagnitude(feature) {
       mag = magnitude / 180;
       break;
     default:
-      console.log('Not a valid energy type');
+      console.warn('Not a valid energy type');
   }
-  console.log('raw', magnitude, mag);
   return mag;
 }
 
@@ -1054,19 +1263,23 @@ const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 
 // TO-DO: need to change the months to use the start and end dates...
 const monthVals = monthsShort.map(month => Date.parse(month + ' 1, 2020'));
-
+const time = {
+  start: timestamp(defaultStartDate),
+  end: timestamp(defaultEndDate)
+};
 // implement the noUiSlider
 const timeSlider = nouislider__WEBPACK_IMPORTED_MODULE_12__["default"].create(slider, {
   // step: ,
   behaviour: 'tap-drag',
   connect: true,
   range: {
-    min: timestamp(defaultStartDate),
-    max: timestamp(defaultEndDate)
+    min: time.start,
+    //timestamp( defaultStartDate ),
+    max: time.end //timestamp( defaultEndDate ),
   },
   direction: 'ltr',
   step: 24 * 60 * 60 * 1000,
-  start: [timestamp(defaultStartDate), timestamp(defaultEndDate)],
+  start: [timestamp(defaultStartDate), timestamp(defaultStartDate)],
   format: wnumb__WEBPACK_IMPORTED_MODULE_14___default()({
     decimals: 0
   }),
@@ -1105,7 +1318,7 @@ function formatDate(date) {
   return monthsShort[date.getMonth()] + ', ' + date.getFullYear();
 }
 const dateValues = [document.getElementById('event-start'), document.getElementById('event-end'), document.getElementById('event-total')];
-timeSlider.on('slide', (values, handle) => {
+timeSlider.on('update', (values, handle) => {
   updateMapMarkers(map, theGeoJson, values);
 });
 function updateMapMarkers(mapObj, geoJson, values) {
@@ -1126,8 +1339,9 @@ function updateMapMarkers(mapObj, geoJson, values) {
   });
 }
 
+// import 'leaflet.heat';
+
 const hMapArr = getHeatMapArr(verifiedFeatures);
-console.log(hMapArr);
 function getHeatMapArr(featuresArr) {
   return featuresArr.map(f => {
     return [f.geometry.coordinates[0], f.geometry.coordinates[1], f.properties.mag];
@@ -1164,23 +1378,243 @@ const heatObj = leaflet__WEBPACK_IMPORTED_MODULE_0___default().heatLayer(hMapArr
   minOpacity: .5,
   radius: 25,
   blur: 15,
-  gradient: colors.b
+  gradient: colors.c
 });
 heatObj.addTo(map);
-timeSlider.on('slide', (values, handle) => {
+timeSlider.on('update', (values, handle, unencoded, tap, positions, noUiSlider) => {
+  // console.log( 'here', values, handle, unencoded, tap, positions, noUiSlider );
   updateHeatMap(heatObj, verifiedFeatures, values);
 });
-function updateHeatMap(heatLayer, featuresArr, values) {
+function filterByType(arr, type) {
+  return arr.filter(feature => {
+    return feature.properties.tags.contains(type);
+  });
+}
+function updateHeatMap(heatLayer, featuresArr, values, type) {
   // timeSlider.get( true )
   const newStart = new Date(parseInt(values[0]));
   const newEnd = new Date(parseInt(values[1]));
+  const filteredTypes = type ? filterByType(featuresArr, type) : featuresArr;
+  console.log('fil', filteredTypes);
   const filteredHeatArr = featuresArr.filter(feature => {
     return dateInRange(feature.properties.Date, newStart, newEnd);
   });
   heatLayer.setLatLngs(getHeatMapArr(filteredHeatArr));
 }
+
+// set beginning time of second handle at time-start;
+
+leaflet__WEBPACK_IMPORTED_MODULE_0___default().easyButton('fa-play', function (btn, map) {
+  playTimeline();
+}).addTo(map);
+timeSlider.on('set', (values, handle, unencoded, tap, positions, noUiSlider) => {
+  console.log('v', handle, unencoded, tap, positions);
+});
+let interval;
+const paused = false;
+let active = false;
+let iterations = 0;
+let start = 0;
+playTimeline();
+function getStartTime() {
+  const totalTime = time.end - time.start;
+  const percentComplete = timeSlider.getPositions()[1] / 100;
+  const elapsed = percentComplete * totalTime;
+  const remainingTime = totalTime - elapsed;
+  // console.log( 'remaining time', pos, totalTime, remainingTime );
+  return remainingTime;
+}
+function playTimeline() {
+  // console.log( timeSlider.get( true ) );
+  // console.log( timeSlider.get( true ) );
+  active = !active;
+  // paused = ! paused;
+
+  start = getStartTime();
+  // console.log( 'zero?', start );
+
+  // console.log( 'typeof', interval );
+  if (interval) {
+    // paused = ! paused;
+    clearInterval(interval);
+    return;
+  }
+
+  // timeSlider.set( [ null, time.start ], true, true );
+  let lastTime = time.start;
+  const divider = 3000;
+  const intvl = (time.end - time.start) / divider;
+
+  // console.log( iterations, interval );
+  if (active) {
+    interval = setInterval(() => {
+      iterations++;
+      timeSlider.setHandle(1, lastTime, true);
+      lastTime = lastTime + intvl;
+      if (iterations >= divider) {
+        clearInterval(interval);
+      }
+    }, .25);
+  }
+}
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } });
+
+/***/ }),
+
+/***/ "./src/scripts/mapSimpleHeat.js":
+/*!**************************************!*\
+  !*** ./src/scripts/mapSimpleHeat.js ***!
+  \**************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+let ga = 0.0;
+let timerId = 0;
+if (true) {
+  module.exports = simpleheat;
+}
+function simpleheat(canvas) {
+  if (!(this instanceof simpleheat)) {
+    return new simpleheat(canvas);
+  }
+  this._canvas = canvas = typeof canvas === 'string' ? document.getElementById(canvas) : canvas;
+  this._ctx = canvas.getContext('2d', {
+    willReadFrequently: true
+  });
+  this._width = canvas.width;
+  this._height = canvas.height;
+  this._max = 1;
+  this._data = [];
+}
+simpleheat.prototype = {
+  defaultRadius: 25,
+  defaultGradient: {
+    0.4: 'blue',
+    0.6: 'cyan',
+    0.7: 'lime',
+    0.8: 'yellow',
+    1.0: 'red'
+  },
+  data(data) {
+    this._data = data;
+    return this;
+  },
+  max(max) {
+    this._max = max;
+    return this;
+  },
+  add(point) {
+    this._data.push(point);
+    return this;
+  },
+  clear() {
+    this._data = [];
+    return this;
+  },
+  radius(r, blur) {
+    blur = blur === undefined ? 15 : blur;
+
+    // create a grayscale blurred circle image that we'll use for drawing points
+    const circle = this._circle = this._createCanvas(),
+      ctx = circle.getContext('2d'),
+      r2 = this._r = r + blur;
+    circle.width = circle.height = r2 * 2;
+    ctx.shadowOffsetX = ctx.shadowOffsetY = r2 * 2;
+    ctx.shadowBlur = blur;
+    ctx.shadowColor = 'black';
+    ctx.beginPath();
+    ctx.arc(-r2, -r2, r, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 0.15;
+    return this;
+  },
+  resize() {
+    this._width = this._canvas.width;
+    this._height = this._canvas.height;
+  },
+  gradient(grad) {
+    // create a 256x1 gradient that we'll use to turn a grayscale heatmap into a colored one
+    const canvas = this._createCanvas(),
+      ctx = canvas.getContext('2d', {
+        willReadFrequently: true
+      }),
+      gradient = ctx.createLinearGradient(0, 0, 0, 256);
+    canvas.width = 1;
+    canvas.height = 256;
+    for (const i in grad) {
+      gradient.addColorStop(+i, grad[i]);
+    }
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1, 256);
+    this._grad = ctx.getImageData(0, 0, 1, 256).data;
+    return this;
+  },
+  fadeIn(ctx) {
+    ctx.globalAlpha = ga;
+    console.log('here', ctx);
+    ga = ga + 0.1;
+    if (ga > 1.0) {
+      // goingUp = false;
+      clearInterval(timerId);
+    }
+  },
+  draw(minOpacity) {
+    if (!this._circle) {
+      this.radius(this.defaultRadius);
+    }
+    if (!this._grad) {
+      this.gradient(this.defaultGradient);
+    }
+    const ctx = this._ctx;
+    ctx.clearRect(0, 0, this._width, this._height);
+
+    // draw a grayscale heatmap by putting a blurred circle at each data point
+    for (var i = 0, len = this._data.length, p; i < len; i++) {
+      p = this._data[i];
+      ctx.globalAlpha = Math.min(Math.max(p[2] / this._max, minOpacity === undefined ? 0.05 : minOpacity), 1);
+      ctx.drawImage(this._circle, p[0] - this._r, p[1] - this._r);
+    }
+
+    // colorize the heatmap, using opacity value of each pixel to get the right color from our gradient
+    const colored = ctx.getImageData(0, 0, this._width, this._height);
+    this._colorize(colored.data, this._grad);
+    ctx.putImageData(colored, 0, 0);
+    ctx.globalAlpha = ga;
+    // console.log( ctx );
+    timerId = setInterval(() => {
+      // console.log( 'here', ctx );
+      ga = ga + 0.1;
+      if (ga > 1.0) {
+        // goingUp = false;
+        clearInterval(timerId);
+      }
+    }, 100);
+    return this;
+  },
+  _colorize(pixels, gradient) {
+    for (var i = 0, len = pixels.length, j; i < len; i += 4) {
+      j = pixels[i + 3] * 4; // get gradient color from opacity value
+
+      if (j) {
+        pixels[i] = gradient[j];
+        pixels[i + 1] = gradient[j + 1];
+        pixels[i + 2] = gradient[j + 2];
+      }
+    }
+  },
+  _createCanvas() {
+    if (typeof document !== 'undefined') {
+      return document.createElement('canvas');
+    }
+    // create a new canvas instance in node.js
+    // the canvas class needs to have a default constructor without any parameter
+    return new this._canvas.constructor();
+  }
+};
 
 /***/ }),
 
@@ -2574,26 +3008,6 @@ function buildIcon(ambiguousIconString) {
 
 }).call(this);
 
-
-/***/ }),
-
-/***/ "./node_modules/leaflet.heat/dist/leaflet-heat.js":
-/*!********************************************************!*\
-  !*** ./node_modules/leaflet.heat/dist/leaflet-heat.js ***!
-  \********************************************************/
-/***/ (() => {
-
-/*
- (c) 2014, Vladimir Agafonkin
- simpleheat, a tiny JavaScript library for drawing heatmaps with Canvas
- https://github.com/mourner/simpleheat
-*/
-!function(){"use strict";function t(i){return this instanceof t?(this._canvas=i="string"==typeof i?document.getElementById(i):i,this._ctx=i.getContext("2d"),this._width=i.width,this._height=i.height,this._max=1,void this.clear()):new t(i)}t.prototype={defaultRadius:25,defaultGradient:{.4:"blue",.6:"cyan",.7:"lime",.8:"yellow",1:"red"},data:function(t,i){return this._data=t,this},max:function(t){return this._max=t,this},add:function(t){return this._data.push(t),this},clear:function(){return this._data=[],this},radius:function(t,i){i=i||15;var a=this._circle=document.createElement("canvas"),s=a.getContext("2d"),e=this._r=t+i;return a.width=a.height=2*e,s.shadowOffsetX=s.shadowOffsetY=200,s.shadowBlur=i,s.shadowColor="black",s.beginPath(),s.arc(e-200,e-200,t,0,2*Math.PI,!0),s.closePath(),s.fill(),this},gradient:function(t){var i=document.createElement("canvas"),a=i.getContext("2d"),s=a.createLinearGradient(0,0,0,256);i.width=1,i.height=256;for(var e in t)s.addColorStop(e,t[e]);return a.fillStyle=s,a.fillRect(0,0,1,256),this._grad=a.getImageData(0,0,1,256).data,this},draw:function(t){this._circle||this.radius(this.defaultRadius),this._grad||this.gradient(this.defaultGradient);var i=this._ctx;i.clearRect(0,0,this._width,this._height);for(var a,s=0,e=this._data.length;e>s;s++)a=this._data[s],i.globalAlpha=Math.max(a[2]/this._max,t||.05),i.drawImage(this._circle,a[0]-this._r,a[1]-this._r);var n=i.getImageData(0,0,this._width,this._height);return this._colorize(n.data,this._grad),i.putImageData(n,0,0),this},_colorize:function(t,i){for(var a,s=3,e=t.length;e>s;s+=4)a=4*t[s],a&&(t[s-3]=i[a],t[s-2]=i[a+1],t[s-1]=i[a+2])}},window.simpleheat=t}(),/*
- (c) 2014, Vladimir Agafonkin
- Leaflet.heat, a tiny and fast heatmap plugin for Leaflet.
- https://github.com/Leaflet/Leaflet.heat
-*/
-L.HeatLayer=(L.Layer?L.Layer:L.Class).extend({initialize:function(t,i){this._latlngs=t,L.setOptions(this,i)},setLatLngs:function(t){return this._latlngs=t,this.redraw()},addLatLng:function(t){return this._latlngs.push(t),this.redraw()},setOptions:function(t){return L.setOptions(this,t),this._heat&&this._updateOptions(),this.redraw()},redraw:function(){return!this._heat||this._frame||this._map._animating||(this._frame=L.Util.requestAnimFrame(this._redraw,this)),this},onAdd:function(t){this._map=t,this._canvas||this._initCanvas(),t._panes.overlayPane.appendChild(this._canvas),t.on("moveend",this._reset,this),t.options.zoomAnimation&&L.Browser.any3d&&t.on("zoomanim",this._animateZoom,this),this._reset()},onRemove:function(t){t.getPanes().overlayPane.removeChild(this._canvas),t.off("moveend",this._reset,this),t.options.zoomAnimation&&t.off("zoomanim",this._animateZoom,this)},addTo:function(t){return t.addLayer(this),this},_initCanvas:function(){var t=this._canvas=L.DomUtil.create("canvas","leaflet-heatmap-layer leaflet-layer"),i=L.DomUtil.testProp(["transformOrigin","WebkitTransformOrigin","msTransformOrigin"]);t.style[i]="50% 50%";var a=this._map.getSize();t.width=a.x,t.height=a.y;var s=this._map.options.zoomAnimation&&L.Browser.any3d;L.DomUtil.addClass(t,"leaflet-zoom-"+(s?"animated":"hide")),this._heat=simpleheat(t),this._updateOptions()},_updateOptions:function(){this._heat.radius(this.options.radius||this._heat.defaultRadius,this.options.blur),this.options.gradient&&this._heat.gradient(this.options.gradient),this.options.max&&this._heat.max(this.options.max)},_reset:function(){var t=this._map.containerPointToLayerPoint([0,0]);L.DomUtil.setPosition(this._canvas,t);var i=this._map.getSize();this._heat._width!==i.x&&(this._canvas.width=this._heat._width=i.x),this._heat._height!==i.y&&(this._canvas.height=this._heat._height=i.y),this._redraw()},_redraw:function(){var t,i,a,s,e,n,h,o,r,d=[],_=this._heat._r,l=this._map.getSize(),m=new L.Bounds(L.point([-_,-_]),l.add([_,_])),c=void 0===this.options.max?1:this.options.max,u=void 0===this.options.maxZoom?this._map.getMaxZoom():this.options.maxZoom,f=1/Math.pow(2,Math.max(0,Math.min(u-this._map.getZoom(),12))),g=_/2,p=[],v=this._map._getMapPanePos(),w=v.x%g,y=v.y%g;for(t=0,i=this._latlngs.length;i>t;t++)if(a=this._map.latLngToContainerPoint(this._latlngs[t]),m.contains(a)){e=Math.floor((a.x-w)/g)+2,n=Math.floor((a.y-y)/g)+2;var x=void 0!==this._latlngs[t].alt?this._latlngs[t].alt:void 0!==this._latlngs[t][2]?+this._latlngs[t][2]:1;r=x*f,p[n]=p[n]||[],s=p[n][e],s?(s[0]=(s[0]*s[2]+a.x*r)/(s[2]+r),s[1]=(s[1]*s[2]+a.y*r)/(s[2]+r),s[2]+=r):p[n][e]=[a.x,a.y,r]}for(t=0,i=p.length;i>t;t++)if(p[t])for(h=0,o=p[t].length;o>h;h++)s=p[t][h],s&&d.push([Math.round(s[0]),Math.round(s[1]),Math.min(s[2],c)]);this._heat.data(d).draw(this.options.minOpacity),this._frame=null},_animateZoom:function(t){var i=this._map.getZoomScale(t.zoom),a=this._map._getCenterOffset(t.center)._multiplyBy(-i).subtract(this._map._getMapPanePos());L.DomUtil.setTransform?L.DomUtil.setTransform(this._canvas,a,i):this._canvas.style[L.DomUtil.TRANSFORM]=L.DomUtil.getTranslateString(a)+" scale("+i+")"}}),L.heatLayer=function(t,i){return new L.HeatLayer(t,i)};
 
 /***/ }),
 

@@ -60,10 +60,12 @@ figure {
 	border: var(--border);
 	outline: var(--border);
 	// outline-offset: calc( .5 * var(--grid-spacer));
-	max-width: 1180px;
-	width: 90%;
-	margin-left: auto;
-	margin-right: auto;
+	// max-width: 1180px;
+	// width: 90%;
+	// margin-left: auto;
+	// margin-right: auto;
+	// margin-inline: auto;
+
 }
 .img-fluid {
 	width: 100%;
@@ -102,7 +104,7 @@ font-size: var(--fz-sm);
 	display: flex;
 	justify-content: space-between;
 	position: relative;
-	margin: 1rem 0 2rem
+	margin:0 0 var(--spacer-5);
 }
 .arrow-parts__wrapper {
 	--dim: 20px;

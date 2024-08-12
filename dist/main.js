@@ -1493,6 +1493,23 @@
 
 /***/ }),
 
+/***/ "./src/scripts/backToTop.js":
+/*!**********************************!*\
+  !*** ./src/scripts/backToTop.js ***!
+  \**********************************/
+/***/ (() => {
+
+(() => {
+  const target = document.querySelector('#back-to-top-container');
+  const contHeight = document.querySelector('.inner-page').offsetHeight;
+  const h = window.visualViewport.height;
+  if (contHeight > h) {
+    target.style.display = 'block';
+  }
+})();
+
+/***/ }),
+
 /***/ "./src/scripts/gsap.min.js":
 /*!*********************************!*\
   !*** ./src/scripts/gsap.min.js ***!
@@ -3908,6 +3925,108 @@
 
 /***/ }),
 
+/***/ "./src/scripts/navigation.js":
+/*!***********************************!*\
+  !*** ./src/scripts/navigation.js ***!
+  \***********************************/
+/***/ (() => {
+
+/**
+ * File navigation.js.
+ *
+ * Handles toggling the navigation menu for small screens and enables TAB key
+ * navigation support for dropdown menus.
+ */
+(function () {
+  const siteNavigation = document.getElementById('site-navigation');
+
+  // Return early if the navigation doesn't exist.
+  if (!siteNavigation) {
+    return;
+  }
+  const button = siteNavigation.getElementsByTagName('button')[0];
+  // Return early if the button doesn't exist.
+  if ('undefined' === typeof button) {
+    return;
+  }
+  const menu = siteNavigation.getElementsByTagName('ul')[0];
+
+  // Hide menu toggle button if menu is empty and return early.
+  if ('undefined' === typeof menu) {
+    button.style.display = 'none';
+    return;
+  }
+  if (!menu.classList.contains('nav-menu')) {
+    menu.classList.add('nav-menu');
+  }
+
+  // Toggle the .toggled class and the aria-expanded value each time the button is clicked.
+  button.addEventListener('click', function () {
+    siteNavigation.classList.toggle('is-active');
+    button.classList.toggle('is-active');
+    if (button.getAttribute('aria-expanded') === 'true') {
+      button.setAttribute('aria-expanded', 'false');
+    } else {
+      button.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  // Remove the .toggled class and set aria-expanded to false when the user clicks outside the navigation.
+  document.addEventListener('click', function (event) {
+    const isClickInside = siteNavigation.contains(event.target);
+    if (!isClickInside) {
+      siteNavigation.classList.remove('is-active');
+      button.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Get all the link elements within the menu.
+  const links = menu.getElementsByTagName('a');
+
+  // Get all the link elements with children within the menu.
+  const linksWithChildren = menu.querySelectorAll('.menu-item-has-children > a, .page_item_has_children > a');
+
+  // Toggle focus each time a menu link is focused or blurred.
+  for (const link of links) {
+    link.addEventListener('focus', toggleFocus, true);
+    link.addEventListener('blur', toggleFocus, true);
+  }
+
+  // Toggle focus each time a menu link with children receive a touch event.
+  for (const link of linksWithChildren) {
+    link.addEventListener('touchstart', toggleFocus, false);
+  }
+
+  /**
+   * Sets or removes .focus class on an element.
+   */
+  function toggleFocus() {
+    if (event.type === 'focus' || event.type === 'blur') {
+      let self = this;
+      // Move up through the ancestors of the current link until we hit .nav-menu.
+      while (!self.classList.contains('nav-menu')) {
+        // On li elements toggle the class .focus.
+        if ('li' === self.tagName.toLowerCase()) {
+          self.classList.toggle('focus');
+        }
+        self = self.parentNode;
+      }
+    }
+    if (event.type === 'touchstart') {
+      const menuItem = this.parentNode;
+      event.preventDefault();
+      for (const link of menuItem.parentNode.children) {
+        if (menuItem !== link) {
+          link.classList.remove('focus');
+        }
+      }
+      menuItem.classList.toggle('focus');
+    }
+  }
+})();
+
+/***/ }),
+
 /***/ "./src/scripts/page-transition.js":
 /*!****************************************!*\
   !*** ./src/scripts/page-transition.js ***!
@@ -4656,10 +4775,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _scss_index_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./scss/index.scss */ "./src/scss/index.scss");
 /* harmony import */ var _scripts_scrollspy_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./scripts/scrollspy.js */ "./src/scripts/scrollspy.js");
 /* harmony import */ var _scripts_page_transition_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./scripts/page-transition.js */ "./src/scripts/page-transition.js");
+/* harmony import */ var _scripts_navigation_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./scripts/navigation.js */ "./src/scripts/navigation.js");
+/* harmony import */ var _scripts_navigation_js__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_scripts_navigation_js__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _scripts_backToTop_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./scripts/backToTop.js */ "./src/scripts/backToTop.js");
+/* harmony import */ var _scripts_backToTop_js__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_scripts_backToTop_js__WEBPACK_IMPORTED_MODULE_4__);
 // import main stylesheet
 
 
 // start scripts
+
+
 
 
 })();

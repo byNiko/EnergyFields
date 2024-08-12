@@ -1,9 +1,9 @@
-.menu-item {
-	line-height: 1;
-}
+@use './abstracts/mixins' as *;
 
-.menu-toggle {
-	display: none;
+.menu-item {
+	@include bp(md) {
+		line-height: 1;
+	}
 }
 
 .site-description {
@@ -21,7 +21,8 @@
 }
 
 .site-branding {
-	width: 350px;
+	width: 550px;
+	z-index: 1000;
 
 	img {
 		width: 100%;
@@ -32,6 +33,12 @@
 .secondary-navigation {
 	// padding: 0 2rem;
 	font-size: var(--fz-md);
+	width: 100%;
+	text-align: center;
+
+	@include bp(md) {
+		width: auto;
+	}
 
 	.menu {
 		list-style-type: none;
@@ -41,9 +48,23 @@
 		margin: 0;
 	}
 
-	.current-menu-item a {
-		border-color: currentColor;
+	.menu-item {
+		.nav-link {
+			@include bp(md, "max-width"){
+				width: 100%;
+				display: inline-block;
+			font-size: 2em;
+			}
+		}
+	}
+
+	.current-menu-item .nav-link {
+		
 		color: var(--color-accent);
+		.nav-link__text.nav-link__text {
+			display: inline-block;
+			border-color: currentColor;
+		}
 	}
 
 	a {
@@ -51,19 +72,81 @@
 		color: var(--color-text);
 		text-transform: uppercase;
 		font-family: var(--ff-header-normal);
-		border-bottom: 2px solid transparent;
+	
 		transition: color 1.2s, border-color .2s;
 		font-size: 1.3rem;
 		letter-spacing: 2px;
+		.nav-link__text {
+			border-bottom: 2px solid transparent;
+		}
 
 		&:hover {
 			--text-color: var(--color-accent) // color:var(--color-accent);
+			.nav-link__text {
 				border-color: var(--text-color);
+			
+			}
 		}
 
 	}
 }
 
 .main-navigation {
-	margin-right: auto;
+	@include bp(md) {
+		// margin-left: auto;
+		margin-right: auto;
+	}
 }
+
+.mobile-nav-toggle.hamburger {
+	display: block;
+	position: relative;
+	z-index: 1000;
+
+	@include bp(md) {
+		display: none;
+	}
+}
+
+.site-navigation-wrapper {
+	display: flex;
+	width: 100%;
+
+	@include bp(md, 'max-width') {
+		// display: none;
+		flex-direction: column;
+		gap: 1rem;
+		position: fixed;
+		background: white;
+		inset: 0;
+		height: 100%;
+		z-index: 1;
+		justify-content: center;
+		align-items: center;
+		transform: translatex(-100%);
+		transition: transform .2s ease-in-out;
+		.site-header.is-active &{
+			transform: translatex(0);
+		}
+	}
+
+}
+
+.menu {
+	@include bp(md, 'max-width') {
+		display: flex;
+		flex-direction: column;
+	}
+}
+
+// .inner-site-navigation-wrapper {
+// 	display: flex;
+// flex-direction: column;
+// align-items: center;
+// justify-content: center;
+// gap: 1rem;
+// @include bp(md){
+// 	flex-direction: row;
+// 	width: 100%;
+// }
+// }

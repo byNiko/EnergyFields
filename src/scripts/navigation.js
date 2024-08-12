@@ -4,7 +4,7 @@
  * Handles toggling the navigation menu for small screens and enables TAB key
  * navigation support for dropdown menus.
  */
-( function () {
+( function() {
 	const siteNavigation = document.getElementById( 'site-navigation' );
 
 	// Return early if the navigation doesn't exist.
@@ -13,7 +13,6 @@
 	}
 
 	const button = siteNavigation.getElementsByTagName( 'button' )[ 0 ];
-
 	// Return early if the button doesn't exist.
 	if ( 'undefined' === typeof button ) {
 		return;
@@ -32,8 +31,9 @@
 	}
 
 	// Toggle the .toggled class and the aria-expanded value each time the button is clicked.
-	button.addEventListener( 'click', function () {
-		siteNavigation.classList.toggle( 'toggled' );
+	button.addEventListener( 'click', function() {
+		siteNavigation.classList.toggle( 'is-active' );
+		button.classList.toggle( 'is-active' );
 
 		if ( button.getAttribute( 'aria-expanded' ) === 'true' ) {
 			button.setAttribute( 'aria-expanded', 'false' );
@@ -43,11 +43,11 @@
 	} );
 
 	// Remove the .toggled class and set aria-expanded to false when the user clicks outside the navigation.
-	document.addEventListener( 'click', function ( event ) {
+	document.addEventListener( 'click', function( event ) {
 		const isClickInside = siteNavigation.contains( event.target );
 
 		if ( ! isClickInside ) {
-			siteNavigation.classList.remove( 'toggled' );
+			siteNavigation.classList.remove( 'is-active' );
 			button.setAttribute( 'aria-expanded', 'false' );
 		}
 	} );
@@ -98,4 +98,4 @@
 			menuItem.classList.toggle( 'focus' );
 		}
 	}
-} )();
+}() );

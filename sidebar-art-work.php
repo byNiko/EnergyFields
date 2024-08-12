@@ -74,7 +74,7 @@ $location = new Location($locations[0]);
 				Address
 			</div>
 			<div class="sidebar__content">
-				<!-- <a href="<?= $map_url; ?> " class="sidebar__content"> -->
+				 <a href="<?= $map_url; ?> " class="sidebar__content"> 
 				<?php if ($address['name']) : ?>
 					<div class="address">
 						<?= $address['name']; ?>
@@ -86,9 +86,8 @@ $location = new Location($locations[0]);
 				<div class="address">
 					<?= $address['city']; ?> <?= $address['state']; ?>, <?= $address['zip_code']; ?>
 				</div>
-				<!-- </a> -->
+				</a>
 			</div>
-			<a href="<?= $map_url; ?>">Get Directions &nearr;</a>
 		</div>
 	<?php endif; ?>
 	<?php if ($admission = get_field('admission')) : ?>

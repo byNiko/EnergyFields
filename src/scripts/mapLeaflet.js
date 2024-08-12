@@ -21,6 +21,8 @@ import infoBox from './mapInfoBox.js';
 // import minZoom from './mapMinZoom.js';
 
 import { allJson } from './mapGoogleData';
+let worldVolcanoes;
+// import { worldVolcanoes } from './mapWorldVolcanoes';
 // import { geoJson } from './mapData';
 
 const initView = {
@@ -125,6 +127,30 @@ function showInfo( e, f ) {
 // put all features into one array
 const allFeatures = aggregateFeatures( allJson );
 const verifiedFeatures = getVerifiedFeatures( allFeatures );
+if ( worldVolcanoes ) {
+	const worldVolcanosGeoJson = L.geoJSON( worldVolcanoes, {
+		pointToLayer( point, latLng ) {
+			const lng = L.Util.wrapNum( point.geometry.coordinates[ 0 ], [ -360, 0 ], true );
+			const lat = point.geometry.coordinates[ 1 ];
+			const c = new Circle( [ lat, lng ], 100000 );
+			// c.addEventListener( 'click', ( e ) => {
+			// 	showInfo( e, point );
+			// } );
+			// const d = makeMarker( point );
+			return c;
+		},
+	} );
+	worldVolcanosGeoJson.addTo( map );
+	let showAllVolcanoes = true;
+	L.easyButton( 'fa-map', function( btn, map ) {
+		showAllVolcanoes = ! showAllVolcanoes;
+		if ( showAllVolcanoes ) {
+			map.addLayer( worldVolcanosGeoJson );
+		} else {
+			map.removeLayer( worldVolcanosGeoJson );
+		}
+	} ).addTo( map );
+}
 
 const theGeoJson = L.geoJSON( verifiedFeatures, {
 	pointToLayer( point, latLng ) {
@@ -192,6 +218,9 @@ L.control.tagFilterButton( {
 	data: allTags,
 	icon: '<i class="fa-solid fa-filter"></i>',
 	filterOnEveryClick: true,
+	onSelectionComplete( e ) {
+		console.log( 'selected', e );
+	},
 } ).addTo( map );
 
 /**
@@ -324,9 +353,8 @@ function normalizeMagnitude( feature ) {
 			mag = magnitude / 180;
 			break;
 		default:
-			console.log( 'Not a valid energy type' );
+			console.warn( 'Not a valid energy type' );
 	}
-	console.log( 'raw', magnitude, mag );
 	return mag;
 }
 
@@ -386,18 +414,22 @@ const monthsShort = [
 // TO-DO: need to change the months to use the start and end dates...
 const monthVals = monthsShort.map( ( month ) => Date.parse( month + ' 1, 2020' ) );
 
+const time = {
+	start: timestamp( defaultStartDate ),
+	end: timestamp( defaultEndDate ),
+};
 // implement the noUiSlider
 const timeSlider = noUiSlider.create( slider, {
 	// step: ,
 	behaviour: 'tap-drag',
 	connect: true,
 	range: {
-		min: timestamp( defaultStartDate ),
-		max: timestamp( defaultEndDate ),
+		min: time.start, //timestamp( defaultStartDate ),
+		max: time.end, //timestamp( defaultEndDate ),
 	},
 	direction: 'ltr',
 	step: 24 * 60 * 60 * 1000,
-	start: [ timestamp( defaultStartDate ), timestamp( defaultEndDate ) ],
+	start: [ timestamp( defaultStartDate ), timestamp( defaultStartDate ) ],
 	format: wNumb( {
 		decimals: 0,
 	} ),
@@ -444,7 +476,7 @@ const dateValues = [
 	document.getElementById( 'event-total' ),
 ];
 
-timeSlider.on( 'slide', ( values, handle ) => {
+timeSlider.on( 'update', ( values, handle ) => {
 	updateMapMarkers( map, theGeoJson, values );
 } );
 
@@ -465,10 +497,11 @@ function updateMapMarkers( mapObj, geoJson, values ) {
 	} );
 }
 
-import 'leaflet.heat';
+// import 'leaflet.heat';
+import './mapHeatlayer.js';
 
 const hMapArr = getHeatMapArr( verifiedFeatures );
-console.log( hMapArr );
+
 function getHeatMapArr( featuresArr ) {
 	return featuresArr.map( ( f ) => {
 		return [ f.geometry.coordinates[ 0 ], f.geometry.coordinates[ 1 ], f.properties.mag ];
@@ -505,21 +538,90 @@ const heatObj = L.heatLayer(
 		minOpacity: .5,
 		radius: 25,
 		blur: 15,
-		gradient: colors.b,
+		gradient: colors.c,
 	} );
 heatObj.addTo( map );
 
-timeSlider.on( 'slide', ( values, handle ) => {
+timeSlider.on( 'update', ( values, handle, unencoded, tap, positions, noUiSlider ) => {
+	// console.log( 'here', values, handle, unencoded, tap, positions, noUiSlider );
 	updateHeatMap( heatObj, verifiedFeatures, values );
 } );
 
-function updateHeatMap( heatLayer, featuresArr, values ) {
+function filterByType( arr, type ) {
+	return arr.filter( ( feature ) => {
+		return feature.properties.tags.contains( type );
+	} );
+}
+
+function updateHeatMap( heatLayer, featuresArr, values, type ) {
 	// timeSlider.get( true )
 	const newStart = new Date( parseInt( values[ 0 ] ) );
 	const newEnd = new Date( parseInt( values[ 1 ] ) );
+	const filteredTypes = type ? filterByType( featuresArr, type ) : featuresArr;
+
+	console.log( 'fil', filteredTypes );
 	const filteredHeatArr = featuresArr.filter( ( feature ) => {
 		return dateInRange( feature.properties.Date, newStart, newEnd );
 	} );
 
 	heatLayer.setLatLngs( getHeatMapArr( filteredHeatArr ) );
+}
+
+// set beginning time of second handle at time-start;
+
+L.easyButton( 'fa-play', function( btn, map ) {
+	playTimeline();
+} ).addTo( map );
+timeSlider.on( 'set', ( values, handle, unencoded, tap, positions, noUiSlider ) => {
+	console.log( 'v', handle, unencoded, tap, positions, );
+} );
+
+let interval;
+const paused = false;
+let active = false;
+let iterations = 0;
+let start = 0;
+playTimeline();
+function getStartTime() {
+	const totalTime = time.end - time.start;
+	const percentComplete = timeSlider.getPositions()[ 1 ] / 100;
+	const elapsed = percentComplete * totalTime;
+	const remainingTime = totalTime - elapsed;
+	// console.log( 'remaining time', pos, totalTime, remainingTime );
+	return remainingTime;
+}
+
+function playTimeline() {
+	// console.log( timeSlider.get( true ) );
+	// console.log( timeSlider.get( true ) );
+	active = ! active;
+	// paused = ! paused;
+
+	start = getStartTime();
+	// console.log( 'zero?', start );
+
+	// console.log( 'typeof', interval );
+	if ( interval ) {
+		// paused = ! paused;
+		clearInterval( interval );
+		return;
+	}
+
+	// timeSlider.set( [ null, time.start ], true, true );
+	let lastTime = time.start;
+	const divider = 3000;
+	const intvl = ( time.end - time.start ) / divider;
+
+	// console.log( iterations, interval );
+	if ( active ) {
+		interval = setInterval( () => {
+			iterations++;
+			timeSlider.setHandle( 1, lastTime, true );
+			lastTime = lastTime + intvl;
+
+			if ( iterations >= divider ) {
+				clearInterval( interval );
+			}
+		}, .25 );
+	}
 }
