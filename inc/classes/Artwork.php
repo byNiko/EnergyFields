@@ -26,13 +26,13 @@ class Artwork {
 	public function get_all_events() {
 		return get_field('events', $this->post);
 	}
-	public function get_event_day_of_week($date){
+	public function get_event_day_of_week($date) {
 		echo $date;
 		$d = new DateTime(($date));
 		return $d;
 	}
 
-	public function get_future_events(){
+	public function get_future_events() {
 		$timesArr = $this->get_event_times();
 		function test_future($time) {
 			$date_now = strtotime(date('Y-m-d H:i:s'));
@@ -42,16 +42,29 @@ class Artwork {
 		return $filtered;
 	}
 
-	public function get_event_times(){
+	public function get_event_times() {
 		$timesArr = $this->get_all_events();
-		usort($timesArr, function($a, $b) {
+		usort($timesArr, function ($a, $b) {
 			return strtotime($a['start']) <=> strtotime($b['start']);
 		});
 		return $timesArr;
 	}
 
+	public function get_artist_names() {
+		$artists = $this->get_artists();
+		$names = [];
+		if ($artists):
+			foreach ($artists as $artist):
+				// var_dump($artist->post_title);
+				$names[] = $artist->post_title;
+			endforeach;
+		endif;
+		return $names;
+	}
 	public function get_card($class = "") {
-		$format = "<a href='%s' class='art-work__card'>
+
+		$format = "
+		<a href='%s' class='art-work__card'>
 		<figure class='has-matte %s'>
 			<div class='art-work__main-img-wrapper'>
 				%s
@@ -66,7 +79,8 @@ class Artwork {
 			$this->get_permalink(),
 			$class,
 			$this->get_main_image('medium', array('class' => 'img-fluid')),
-			$this->get_title()
+			//$this->get_title()
+			implode(',', $this->get_artist_names())
 		);
 	}
 
@@ -75,7 +89,7 @@ class Artwork {
 	}
 
 	public function get_image_caption() {
-		return get_field('image_caption', $this->post);
+		return get_field('image_caption_styled', $this->post);
 	}
 
 	public function get_description() {

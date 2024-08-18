@@ -15,7 +15,7 @@ $art = new Artwork($post);
 					foreach ($artists as $as) :
 						$a = new Artist($as);
 				?>
-						<div class="content">
+						<div class="content artist-content">
 							<header>
 								<h2 class="h2 normal-font">
 									<?= $a->get_post('post_title'); ?>

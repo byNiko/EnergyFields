@@ -16,40 +16,30 @@
 get_header();
 ?>
 
+<div id="overlay-map-info-container" class="overlay-map-info-container">
+	<div class="inner-map-info-container">
+	
+		<div id="mapInfoBox" class="mapInfoBoxContainer">
+			<div class="map_ui_el">
+				<div class="infoBox"></div>
+			</div>
+		</div>
 
-<div id="map-slider" class="map-slider"></div>
-<div id="hovered">
-					<h2>
-						<h4>
-							<div>
-								<span id="event-start">Jan, 1800</span> - <span id="event-end">Dec, 2020</span>
-							</div>
-						</h4>
-						<h3 id="total">Total Events</h3><h2 id="event-total"></h2>
-						<h3>
-							<label> </label>
-						</h3>
-						<h3>
-							<span class="count-label"></span>
-							<span class="count"></span>
-						</h3>
-					</h2>
+		<div class="slider-container">
+			<div class="map_ui_el">
+				<div id="map-slider" class="map-slider"></div>
+				<div id="hovered">
+					<div>
+						<span id="event-start">Jan, 1800</span> - <span id="event-end">Dec, 2020</span>
+					</div>
 				</div>
-<div id="map-filter" class="map-filter">
-	<div class="map-filter__items d-flex">
-		<button class="map-filter__item">Filter</button>
-		<button class="map-filter__item">Filter</button>
-		<button class="map-filter__item">Filter</button>
-		<button class="map-filter__item">Filter</button>
-		<button class="map-filter__item">Filter</button>
+			</div>
+		</div>
 	</div>
 </div>
-<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
-	 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin=""></script> -->
+<div id="map-filter" class="map-filter">
+<?php get_template_part('/template-parts/map/map', 'filters'); ?>
+</div>
 <?php
 
 get_footer();

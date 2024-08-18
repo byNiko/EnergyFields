@@ -1,0 +1,32 @@
+/**** Custom styles for noUiSlider ****/
+.map-slider {
+	--primary: var(--color-accent);
+	--primary-light: #E7E3DC;
+	--dim: 24px;
+	height: calc(.25 * var(--dim))
+}
+
+.noUi-connects{
+	background:var(--primary-light);
+}
+.noUi-connect {
+	background: var(--primary);
+}
+
+.noUi-horizontal .noUi-handle {
+	cursor: pointer;
+    height:var(--dim);
+    width:var(--dim);
+    top: calc(-.4 * var(--dim));
+    right: calc(-.5 * var(--dim)); /* half the width */
+    border-radius: calc(.5 * var(--dim));
+	border: 4px solid var(--primary);
+	background: white;
+	&::before, &::after {
+		display: none;
+	}
+}
+
+.noUi-target.noUi-horizontal .noUi-tooltip {
+
+}

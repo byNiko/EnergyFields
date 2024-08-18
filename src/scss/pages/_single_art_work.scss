@@ -49,8 +49,9 @@
 	.h1 {
 		margin-top: var(--grid-spacer);
 		// color: var(--black); //var(--color-accent);
-		font-size: var(--fz-xxxxl);
+		font-size: var(--fz-xxxl);
 		font-family: var(--ff-header-normal);
+		letter-spacing: .05em;
 		// font-family: var(--ff-display);
 		text-transform: uppercase;
 		// filter: drop-shadow(0px 3px 1px);
@@ -74,12 +75,32 @@
 }
 
 .flex-row.__3x .has-matte {
-	padding: var(--spacer-5);
+	// padding: var(--spacer-5);
 	figcaption {
-		margin-top: var(--spacer-3);
+		// margin-top: var(--spacer-3);
 	}
 
 }
 
 
+}
+
+.artist-content {
+	a {
+		text-transform: uppercase;
+		font-weight: 600;
+		&:after {
+			// content: url(../images/diagonal-arrow.svg);
+			content: '';
+			background-image: url("../images/diagonal-arrow.svg");
+			text-decoration:none;
+		
+			width: .75em;
+			height: .75em;
+			display: inline-block;
+			background-repeat: no-repeat;
+			background-size: contain;
+			transform: translatex(5px);
+		}
+	}
 }

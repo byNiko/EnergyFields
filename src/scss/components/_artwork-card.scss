@@ -1,8 +1,15 @@
 .art-work__card {
+
 	figure {
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
 		height: 100%;
+	}
+	.has-matte {
+		border-width: 1px;
+	}
+	.art-work__title {
+		font-size: var(--fz-sm);
 	}
 }

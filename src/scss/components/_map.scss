@@ -1,37 +1,6 @@
 .map{
 	position: fixed;
-	height: 100vh;
-	width: 100vw;
-	z-index: 0;
-	left:0;
-	top:0;
-	z-index: 0;
-}
-
-.map-filter {
-	position: fixed;
-	bottom: 0;
-	left: 50%;
-	transform: translatex(-50%);
-	border: 3px solid var(--color-accent);
-	border-bottom: 0;
-	z-index: 10;
-}
-
-.map-filter__item {
-	border: none;
-	transition: background-color .2s, color .2s;
-	font-family: var(--ff-header-normal);
-	text-transform: uppercase;
-	letter-spacing: 1px;
-	font-size: var(--fz-md);
-	padding: .5rem 2rem;
-
-	&:hover,
-	&.is-active {
-		color: var(--white);
-		background: var(--color-accent);
-	}
+	inset:0;
 }
 
 .leaflet-bottom.leaflet-left {
@@ -77,11 +46,13 @@
   }
 
 
-  /** Slider **/
+  
+  /** Slider position **/
 
 .home .transition-container {
 	bottom: 0;
 	position:absolute;
+
 }
 
 .leaflet-top.leaflet-left{

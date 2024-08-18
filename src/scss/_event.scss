@@ -1,6 +1,8 @@
 @use './abstracts/mixins' as * ;
-.page-special-events .inner-page {
+.page-events .inner-page {
 	background: transparent;
+	border:none;
+	outline:none;
 }
 .event-card {
 	margin-top: var(--grid-spacer);

@@ -1,0 +1,99 @@
+/** infobox **/
+
+.overlay-map-info-container {
+	--spacer: 32px;
+	--bg: hsla(0, 0%, 100%, .65);
+	position: fixed;
+	top: 90px;
+	bottom: var(--spacer);
+	left: var(--spacer);
+	width: 400px;
+	pointer-events: none;
+
+	.close-infoBox {
+		border: none;
+		box-shadow: none;
+		background: none;
+		outline: none;
+		color: var(--color-accent);
+		font-family: var(-font-family--body);
+		font-weight: 600;
+	}
+	
+	.inner-map-info-container {
+		position: relative;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.mapInfoBoxContainer {
+		&.isHidden {
+			display: none;
+		}
+	
+		&.isOverflow{
+			position: relative;
+			&::after {
+				content: '';
+				position: absolute;
+				inset: auto 0 0;
+				height: 50px;
+				background: linear-gradient(to top, hsla(0, 0%, 100%), hsla(0, 0%, 100%, 0));
+			}
+			.map_ui_el {
+				overflow: auto;
+			}
+			.infoBox {
+				padding-bottom: calc(.5 * var(--spacer));
+			}
+		}
+	}
+
+	.infoBox-section {
+		padding-top: var(--spacer-5);
+	}
+
+	.map_ui_el {
+		padding: calc(.5 * var(--spacer));
+		background: var(--bg);
+		pointer-events: all;
+		position: relative;
+	}
+
+	.infoBox--header {
+		display: flex;
+		justify-content: space-between;
+		align-items: start;
+	}
+
+	.slider-container {
+		position: relative;
+		margin-block-start: auto;
+		;
+	}
+
+	.map-slider {
+		position: relative;
+		width: 99%;
+		margin: calc(.5 * var(--spacer)) auto;
+	}
+	.infoBox--title,
+	.latLng .infoBox--value {
+		font-size:1rem;
+		font-family: var(--ff-body);
+		font-weight: 600;
+		text-transform: uppercase;
+	}
+	.infoBox--header, .latLng{
+		color: var(--color-accent);
+	}
+	.infoBox-section {
+		
+		&.name .infoBox--value {
+			font-family: var(--ff-header-normal);
+			text-transform: uppercase;
+			font-size: var(--fz-lg);
+		}
+	}
+}

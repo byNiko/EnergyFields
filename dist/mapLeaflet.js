@@ -393,6 +393,7 @@ const csvSrc = {
   justEqks: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTXFMM5G7YNL7rOnNUXPOw6O8mM21wnZzEROZDzvJQdJIUhRzkmavHa3ASXfm0K0hIQJ_kLPCEx2tsc/pub?output=csv'
 };
 const csvSrcIds = {
+  earthquakes_new: '1JwyeQcfNfsVtJBuvyehrqKuTieCrB5dTaBkjx5ogGxA',
   earthquakes: '2PACX-1vT4H7hIFfHmMN7zsyAiK80m2D3tJYtI14SYbR4dpnJyy19cMWFPax_L5s3VO1tDuTuiq_F8_UMNovWz',
   volcanos: '2PACX-1vSaVHXlEsLrHOLo3JKbq0O0vzPJ-xq-V9aq38l9I6pw6PDK6Hwvq-psboedz5k_dbbERXb9Adsy4cyF',
   tsunamis: '2PACX-1vROhJHueNXQIrnKmUa2PllI-Lm0mRjmcSiB7x-00Q4-d9uFcG9BlIunLSgEN9ekN5dm7L3ABkFWEDul',
@@ -630,6 +631,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _mapGetTime_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mapGetTime.js */ "./src/scripts/mapGetTime.js");
 var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_mapGetTime_js__WEBPACK_IMPORTED_MODULE_2__]);
 _mapGetTime_js__WEBPACK_IMPORTED_MODULE_2__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
+/* eslint-disable camelcase */
 
 
 
@@ -638,199 +640,106 @@ _mapGetTime_js__WEBPACK_IMPORTED_MODULE_2__ = (__webpack_async_dependencies__.th
 // import { mediaEndpoint } from './mapConstants.js';
 // const L = window.L;
 const emptyBoxText = (0,_mapFunctions_js__WEBPACK_IMPORTED_MODULE_1__.ios)() ? `Best viewed on tablet or desktop. If you’re on IOS please click the play button` : 'Click on a marker';
-const infoBox = L.control({
-  position: 'bottomleft'
-});
-infoBox.Chart = false;
+// const infoBox = L.control( { position: 'bottomleft' } );
+const infoBox = document.querySelector('#mapInfoBox .infoBox');
+
+// infoBox.Chart = false;
 infoBox.markerClicked = false;
-infoBox.onAdd = function (map) {
-  this._div = L.DomUtil.create('div', 'infoBox'); // create a div with a class "info"
-  this.update();
-  return this._div;
+
+// infoBox.onAdd = function( map ) {
+// 	this._div = L.DomUtil.create( 'div', 'infoBox' ); // create a div with a class "info"
+// 	this.update();
+// 	return this._div;
+// };
+infoBox.close = function () {
+  this.closest('.mapInfoBoxContainer').classList.add('isHidden');
 };
 
 // method that we will use to update the control based on feature properties passed
 infoBox.update = async function (feature) {
-  const infoEl = this._div;
+  this.closest('.mapInfoBoxContainer').classList.remove('isHidden');
+  const infoEl = this;
   if (!feature) {
     infoBox.markerClicked = false;
     infoEl.classList.add('is-empty');
-    infoEl.innerHTML = `<div class="">${emptyBoxText}</div>`;
+    infoEl.innerHTML = `
+			<header class="infoBox--header">
+		<div class="infoBox--title">
+		${emptyBoxText}
+		</div>
+		<button class="close-infoBox">X</button>
+	</header>`;
+    infoBox.close();
     return;
   }
-  console.log('got here', infoBox, feature);
   infoBox.markerClicked = feature.properties.id;
   infoEl.classList.remove('is-empty');
   infoEl.innerHTML = makeInfoBoxHtml(feature);
-  // makeSlider();
-  // if ( feature.properties.chartColors ) {
-  // 	infoBox.Chart = makeChart( feature );
-  // }
-  //makeInfoBoxImg( feature, infoEl );
+  setContainerMaxHeight();
 };
 
-// async function makeInfoBoxImg( feature, infoEl ) {
-// 	const slideWrapper = infoEl.querySelector( '.popup--slide-wrapper' );
-// 	const targetDiv = document.querySelector( '.injected-content' );
-// 	if ( ! slideWrapper || ! targetDiv ) {
-// 		return;
-// 	}
-
-// 	const mediaData = await fetchJson( `${ mediaEndpoint }/${ feature.properties.userData.data.dl_meta.featured_image }` );
-// 	if ( mediaData ) {
-// 		const img = ( () => {
-// 			const imgSrc = mediaData.media_details.sizes.thumbnail.source_url;
-// 			const image = document.createElement( 'img' );
-// 			image.src = imgSrc;
-// 			return image;
-// 		} )();
-// 		if ( img.src !== null ) {
-// 			slideWrapper.classList.add( 'has-slides' );
-// 			targetDiv.append( img );
-// 		}
-// 	}
-// }
-
-// function makeSliderWrapper( feature ) {
-// 	return `<div class="popup--slide-wrapper">
-//     <div class="popup--slide">
-//         <div class="chart--canvas-wrapper">
-//             <canvas class="chart--canvas" id="chart-${ feature.properties.id }"></canvas>
-//         </div>
-//         <!-- /chart--canvas-wrapper-->
-//     </div>
-//     <!-- /popup--slide -->
-//     <div class="popup--slide">
-//         <div class="injected-content"></div>
-//     </div>
-//     <!-- popup--slide-->
-//     <div class="slide--controls">
-//         <button class="popup--slide-btn popup--slide-btn-next">></button>
-//         <button class="popup--slide-btn popup--slide-btn-prev"><</button>
-//     </div>
-//     <!-- /slide--control-->
-// </div>
-// <!--/popup--slide-wraper-->`;
-// }
+// infoBox.update();
+infoBox.close();
 function makeInfoBoxHeader(feature) {
   const props = feature.properties;
-  console.log('location', props);
+  const date = new Date(props.Date);
   return `
-	<header class="infoBox-header">
-	<div class="infoBox--event-name">${props.Name}</div>
-	<div class="infoBox--province">
-	<div class='infoBox--title'>Location</div>
-  ${props.Location}
-  </div>
-  <div class="infoBox--latLng">
-  <div class="infoBox--title">Lat/Lng:</div>
-  ${(0,_mapToDegrees_js__WEBPACK_IMPORTED_MODULE_0__["default"])(feature.geometry.coordinates[1],
+	<header class="infoBox--header">
+		<div class="infoBox--title">
+			<div class="infoBox--year">${date.getFullYear()}</div>
+			<div class="infoBox--location">${props.Location}</div>
+		</div>
+		<button class="close-infoBox">X</button>
+	</header>
+	<div class='infoBox-section name'>
+		<div class="infoBox--value">
+		${props.Name}
+		</div>
+	</div>
+	<div class="infoBox-section magnitude">
+		<div class="infoBox--title">Magnitude</div>
+		<div class="infoBox--value" >${props.Magnitude} <span class="magnitude-unit">(${props.unit})</span></div>
+	</div>
+	<div class='infoBox-section impact'>
+		<div class="infoBox--title">Impact</div>
+		<div class="infoBox--value" >${props.Impact}</div>
+	</div>
+	<div class='infoBox-section latLng'>
+		<div class="infoBox--value">
+		${(0,_mapToDegrees_js__WEBPACK_IMPORTED_MODULE_0__["default"])(feature.geometry.coordinates[1],
   // LNG
   feature.geometry.coordinates[0] // LAT
   )}
-  </div>
-  <div class="infoBox--time-wrap">
-  <div class="infoBox--title">Year:</div>
-  <div class="infoBox--time">${props.Year}</div>
-  </div>
-  </header>`;
+		</div>
+	</div>
+</div>
+  `;
 }
 function makeInfoBoxHtml(feature) {
   let html = '';
   html += makeInfoBoxHeader(feature);
-  // if ( feature.properties.chartColors ) {
-  // 	html += makeSliderWrapper( feature );
-  // }
-  html += `
-	<div class='infoBox--title'>Impact</div>
-	<div class='infobox__content'>${feature.properties.Impact}</div>
-	`;
   return html;
 }
+function isOverflowY(element) {
+  return element.scrollHeight !== Math.max(element.offsetHeight, element.clientHeight);
+}
+const setContainerMaxHeight = () => {
+  const infoContainer = document.querySelector('#overlay-map-info-container');
+  const mapInfoBox = infoContainer.querySelector('.mapInfoBoxContainer');
+  const ui_el = mapInfoBox.querySelector('.map_ui_el');
+  mapInfoBox.classList.remove('isOverflow');
+  const h = infoContainer.offsetHeight;
+  const sliderH = document.querySelector('.slider-container').offsetHeight;
+  ui_el.style.maxHeight = `${h - sliderH - 64}px`;
+  if (isOverflowY(mapInfoBox)) {
+    mapInfoBox.classList.add('isOverflow');
+  }
+};
+// setContainerMaxHeight();
+
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (infoBox);
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } });
-
-/***/ }),
-
-/***/ "./src/scripts/mapInfoPane.js":
-/*!************************************!*\
-  !*** ./src/scripts/mapInfoPane.js ***!
-  \************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _mapInfoPane_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mapInfoPane.css */ "./src/scripts/mapInfoPane.css");
-
-// import { map } from './mapLeaflet';
-// export const infoPane = ( map ) => map.createPane( 'info-pane', document.getElementById( 'map' ) );
-
-// // crewate popup, set contnet
-// export const popup = L.popup( {
-// 	pane: 'fixed',
-// 	className: 'popup-fixed test',
-// 	autoPan: false,
-// } ).setContent( 'testing' );
-
-// marker.bindPopup( popup ).on( 'click', fitBoundsPadding );
-
-// // remove all animation class when popupclose
-// map.on( 'popupclose', function( e ) {
-// 	removeAllAnimationClassFromMap();
-// } );
-
-// // ------------------------------------------------
-
-// const mediaQueryList = window.matchMedia( '(min-width: 700px)' );
-
-// mediaQueryList.addEventListener( 'change', ( event ) => onMediaQueryChange( event ) );
-
-// onMediaQueryChange( mediaQueryList );
-
-// function onMediaQueryChange( event ) {
-// 	if ( event.matches ) {
-// 		document.documentElement.style.setProperty( '--min-width', 'true' );
-// 	} else {
-// 		document.documentElement.style.removeProperty( '--min-width' );
-// 	}
-// }
-
-// function fitBoundsPadding( e ) {
-// 	alert( 'hi' );
-// 	removeAllAnimationClassFromMap();
-// 	// get with info div
-// 	const boxInfoWith = document.querySelector(
-// 		'.leaflet-popup-content-wrapper'
-// 	).offsetWidth;
-
-// 	// add class to marker
-// 	e.target._icon.classList.add( 'animation' );
-
-// 	// create a feature group, optionally given an initial set of layers
-// 	const featureGroup = L.featureGroup( [ e.target ] ).addTo( map );
-
-// 	// check if attribute exist
-// 	const getPropertyWidth =
-//     document.documentElement.style.getPropertyValue( '--min-width' );
-
-// 	// sets a map view that contains the given geographical bounds
-// 	// with the maximum zoom level possible
-// 	map.fitBounds( featureGroup.getBounds(), {
-// 		paddingTopLeft: [ getPropertyWidth ? -boxInfoWith : 0, 10 ],
-// 	} );
-// }
-
-// function removeAllAnimationClassFromMap() {
-// 	// get all animation class on map
-// 	const animations = document.querySelectorAll( '.animation' );
-// 	animations.forEach( ( animation ) => {
-// 		animation.classList.remove( 'animation' );
-// 	} );
-
-// 	// back to default position
-// 	map.setView( [ lat, lng ], zoom );
-// }
 
 /***/ }),
 
@@ -845,36 +754,29 @@ __webpack_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var leaflet__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! leaflet */ "./node_modules/leaflet/dist/leaflet-src.js");
 /* harmony import */ var leaflet__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(leaflet__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var leaflet_easybutton__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! leaflet-easybutton */ "./node_modules/leaflet-easybutton/src/easy-button.js");
-/* harmony import */ var leaflet_easybutton__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(leaflet_easybutton__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _node_modules_leaflet_tag_filter_button_src_leaflet_tag_filter_button_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.js */ "./node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.js");
-/* harmony import */ var _node_modules_leaflet_tag_filter_button_src_leaflet_tag_filter_button_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_node_modules_leaflet_tag_filter_button_src_leaflet_tag_filter_button_js__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var leaflet_dist_leaflet_css__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! leaflet/dist/leaflet.css */ "./node_modules/leaflet/dist/leaflet.css");
-/* harmony import */ var _fortawesome_fontawesome_free_css_all_min_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/fontawesome-free/css/all.min.css */ "./node_modules/@fortawesome/fontawesome-free/css/all.min.css");
-/* harmony import */ var _node_modules_leaflet_tag_filter_button_src_leaflet_tag_filter_button_css__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.css */ "./node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.css");
-/* harmony import */ var leaflet_dist_images_marker_icon_png__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! leaflet/dist/images/marker-icon.png */ "./node_modules/leaflet/dist/images/marker-icon.png");
-/* harmony import */ var leaflet_dist_images_marker_shadow_png__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! leaflet/dist/images/marker-shadow.png */ "./node_modules/leaflet/dist/images/marker-shadow.png");
-/* harmony import */ var _mapFunctions_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./mapFunctions.js */ "./src/scripts/mapFunctions.js");
-/* harmony import */ var _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./mapInfoBox.js */ "./src/scripts/mapInfoBox.js");
-/* harmony import */ var _mapGoogleData__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./mapGoogleData */ "./src/scripts/mapGoogleData.js");
-/* harmony import */ var _mapInfoPane_js__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./mapInfoPane.js */ "./src/scripts/mapInfoPane.js");
-/* harmony import */ var nouislider__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! nouislider */ "./node_modules/nouislider/dist/nouislider.mjs");
-/* harmony import */ var nouislider_dist_nouislider_css__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! nouislider/dist/nouislider.css */ "./node_modules/nouislider/dist/nouislider.css");
-/* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! wnumb */ "./node_modules/wnumb/wNumb.js");
-/* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(wnumb__WEBPACK_IMPORTED_MODULE_14__);
-/* harmony import */ var _mapHeatlayer_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./mapHeatlayer.js */ "./src/scripts/mapHeatlayer.js");
-var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_9__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_10__]);
-([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_9__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_10__] = __webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__);
+/* harmony import */ var _mapHeatlayer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mapHeatlayer.js */ "./src/scripts/mapHeatlayer.js");
+/* harmony import */ var leaflet_dist_leaflet_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! leaflet/dist/leaflet.css */ "./node_modules/leaflet/dist/leaflet.css");
+/* harmony import */ var leaflet_dist_images_marker_icon_png__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! leaflet/dist/images/marker-icon.png */ "./node_modules/leaflet/dist/images/marker-icon.png");
+/* harmony import */ var leaflet_dist_images_marker_shadow_png__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! leaflet/dist/images/marker-shadow.png */ "./node_modules/leaflet/dist/images/marker-shadow.png");
+/* harmony import */ var _mapFunctions_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./mapFunctions.js */ "./src/scripts/mapFunctions.js");
+/* harmony import */ var _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./mapInfoBox.js */ "./src/scripts/mapInfoBox.js");
+/* harmony import */ var _mapGoogleData__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mapGoogleData */ "./src/scripts/mapGoogleData.js");
+/* harmony import */ var nouislider__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! nouislider */ "./node_modules/nouislider/dist/nouislider.mjs");
+/* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! wnumb */ "./node_modules/wnumb/wNumb.js");
+/* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(wnumb__WEBPACK_IMPORTED_MODULE_9__);
+var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_7__]);
+([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_7__] = __webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__);
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 
 
+// import 'leaflet-easybutton';
 
-
+// import '../../node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.js';
 
 // styles
 
-
-
+// import '@fortawesome/fontawesome-free/css/all.min.css';
+// import '../../node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.css';
 
 // assets
 
@@ -887,44 +789,6 @@ var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_map
 // import minZoom from './mapMinZoom.js';
 
 
-let worldVolcanoes;
-// import { worldVolcanoes } from './mapWorldVolcanoes';
-// import { geoJson } from './mapData';
-
-const initView = {
-  zoom: 2.5,
-  lat: 0,
-  lng: 0
-};
-const mapConfig = {
-  // maxBounds: bounds,
-  // maxBounds: L.latLngBounds(
-  // 	[ -42.224123, -243.193359 ],
-  // 	[ 48.722392, -70.400391 ]
-  // ),
-  fitBounds: leaflet__WEBPACK_IMPORTED_MODULE_0___default().latLngBounds([-42.224123, -243.193359], [48.722392, -70.400391]),
-  zoomSnap: 0.1,
-  maxZoom: 12,
-  minZoom: 2.5,
-  zoomControl: false,
-  worldCopyJump: false
-};
-const map = leaflet__WEBPACK_IMPORTED_MODULE_0___default().map('map', mapConfig).setView([initView.lat, initView.lng], initView.zoom);
-const tileLayer = leaflet__WEBPACK_IMPORTED_MODULE_0___default().tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-  attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-  maxZoom: 16,
-  center: leaflet__WEBPACK_IMPORTED_MODULE_0___default().latLng(29.597437, -37.045898),
-  zoom: 13,
-  noWrap: false
-}).addTo(map);
-leaflet__WEBPACK_IMPORTED_MODULE_0___default().control.zoom({
-  position: 'bottomright'
-}).addTo(map);
-
-_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_9__["default"].addTo(map);
-
-// create new div icon width svg
-// template svg icon
 const svgIcon = `
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
     <path d="M25 7.335c-2.23-2.069-5.217-3.335-8.5-3.335s-6.27 1.265-8.5 3.335v0c2.46 2.283 4 5.544 4 9.165s-1.54 6.882-4 9.165c2.23 2.069 5.217 3.335 8.5 3.335s6.27-1.265 8.5-3.335c-2.46-2.283-4-5.544-4-9.165s1.54-6.882 4-9.165v0 0zM25.706 8.044c2.045 2.226 3.294 5.195 3.294 8.456s-1.249 6.23-3.294 8.456c-2.279-2.101-3.706-5.112-3.706-8.456s1.427-6.355 3.706-8.456v0 0zM7.294 8.044c-2.045 2.226-3.294 5.195-3.294 8.456s1.249 6.23 3.294 8.456c2.279-2.101 3.706-5.112 3.706-8.456s-1.427-6.355-3.706-8.456v0z"></path>
@@ -952,23 +816,57 @@ const divIcon = leaflet__WEBPACK_IMPORTED_MODULE_0___default().divIcon({
 // } );
 
 (leaflet__WEBPACK_IMPORTED_MODULE_0___default().Marker).prototype.options.icon = divIcon;
-function makeMarker(f) {
-  const featureTags = f.properties.tags.split(',');
-  const coords = f.geometry.coordinates.reverse();
-  let m = false;
-  if (!isNaN(coords[0]) && !isNaN(coords[1])) {
-    m = leaflet__WEBPACK_IMPORTED_MODULE_0___default().marker([...coords], {
-      icon: divIcon,
-      tags: featureTags
-    });
-    // m = new Circle( [ ...coords ], 100000, { tags: featureTags } );
-    // m.setRadius( 5000 );
-    m.addEventListener('click', e => {
-      showInfo(e, f);
-    });
-  }
-  return m;
-}
+const defaultStartDate = 'Jan 1,1883';
+const defaultEndDate = 'Dec 1,2020';
+const time = {
+  start: timestamp(defaultStartDate),
+  end: timestamp(defaultEndDate),
+  range: difference(timestamp(defaultStartDate), timestamp(defaultEndDate)),
+  year: 365 * 24 * 60 * 60 // year in seconds
+};
+const tl = {
+  lastTime: time.start,
+  interval: null,
+  isPaused: false,
+  isActive: false,
+  start: 0,
+  iterations: 0,
+  divider: 3000,
+  intervalFxn: null,
+  checkedFilters: []
+};
+const initView = {
+  zoom: 2.5,
+  lat: 0,
+  lng: 0
+};
+const mapConfig = {
+  // maxBounds: bounds,
+  maxBounds: leaflet__WEBPACK_IMPORTED_MODULE_0___default().latLngBounds([-42.224123, -243.193359], [48.722392, -70.400391]),
+  fitBounds: leaflet__WEBPACK_IMPORTED_MODULE_0___default().latLngBounds([-42.224123, -243.193359], [48.722392, -70.400391]),
+  zoomSnap: 0.1,
+  maxZoom: 12,
+  minZoom: 2.5,
+  zoomControl: false,
+  worldCopyJump: false
+};
+const map = leaflet__WEBPACK_IMPORTED_MODULE_0___default().map('map', mapConfig).setView([initView.lat, initView.lng], initView.zoom);
+leaflet__WEBPACK_IMPORTED_MODULE_0___default().tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+  maxZoom: 16,
+  center: leaflet__WEBPACK_IMPORTED_MODULE_0___default().latLng(29.597437, -37.045898),
+  zoom: 13,
+  noWrap: false
+}).addTo(map);
+leaflet__WEBPACK_IMPORTED_MODULE_0___default().control.zoom({
+  position: 'bottomright'
+}).addTo(map);
+
+// infoBox.addTo( map );
+
+// create new div icon width svg
+// template svg icon
+
 map.on('click', e => {
   // if we clicked on the infoBox - do nothing
   if (Boolean(e.originalEvent.target.closest('.infoBox'))) {
@@ -976,42 +874,16 @@ map.on('click', e => {
   }
   showInfo(e);
 });
-function showInfo(e, f) {
-  leaflet__WEBPACK_IMPORTED_MODULE_0___default().DomEvent.stopPropagation(e); // stop marker click from hitting 'map' object.
-  // if we clicked the same marker - clear infobox
-  if (f?.properties?.id && _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_9__["default"].markerClicked === f.properties.id) {
-    f = false;
-  }
-  _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_9__["default"].update(f);
-}
 
 // put all features into one array
-const allFeatures = aggregateFeatures(_mapGoogleData__WEBPACK_IMPORTED_MODULE_10__.allJson);
+const allFeatures = aggregateFeatures(_mapGoogleData__WEBPACK_IMPORTED_MODULE_7__.allJson);
 const verifiedFeatures = getVerifiedFeatures(allFeatures);
-if (worldVolcanoes) {
-  const worldVolcanosGeoJson = leaflet__WEBPACK_IMPORTED_MODULE_0___default().geoJSON(worldVolcanoes, {
-    pointToLayer(point, latLng) {
-      const lng = leaflet__WEBPACK_IMPORTED_MODULE_0___default().Util.wrapNum(point.geometry.coordinates[0], [-360, 0], true);
-      const lat = point.geometry.coordinates[1];
-      const c = new leaflet__WEBPACK_IMPORTED_MODULE_0__.Circle([lat, lng], 100000);
-      // c.addEventListener( 'click', ( e ) => {
-      // 	showInfo( e, point );
-      // } );
-      // const d = makeMarker( point );
-      return c;
-    }
-  });
-  worldVolcanosGeoJson.addTo(map);
-  let showAllVolcanoes = true;
-  leaflet__WEBPACK_IMPORTED_MODULE_0___default().easyButton('fa-map', function (btn, map) {
-    showAllVolcanoes = !showAllVolcanoes;
-    if (showAllVolcanoes) {
-      map.addLayer(worldVolcanosGeoJson);
-    } else {
-      map.removeLayer(worldVolcanosGeoJson);
-    }
-  }).addTo(map);
-}
+
+// get all unique tags in the data
+const allTags = aggregateTags(verifiedFeatures);
+
+// const testGeoJson = L.geoJSON().addTo( map );
+// const theGeoJson = L.geoJSON().addTo( map );
 const theGeoJson = leaflet__WEBPACK_IMPORTED_MODULE_0___default().geoJSON(verifiedFeatures, {
   pointToLayer(point, latLng) {
     // const c = new Circle( latLng, 100000 );
@@ -1026,61 +898,20 @@ const theGeoJson = leaflet__WEBPACK_IMPORTED_MODULE_0___default().geoJSON(verifi
 theGeoJson.addTo(map);
 map.fitBounds(theGeoJson.getBounds());
 
-// get all unique tags in the data
-const allTags = aggregateTags(verifiedFeatures);
-
-/**
- * The function `aggregateFeatures` takes an array of JSON objects and returns an array containing all
- * the `features` from each object.
- * @param {Array} allJson array - The `aggregateFeatures` function takes an array of JSON objects as input. Each JSON
- *                        object in the array should have a property named `features`, which is expected to be an array of
- *                        features. The function then aggregates all the features from each JSON object into a single array
- *                        and returns it.
- * @return {Array} The `aggregateFeatures` function takes an array of JSON objects as input and returns an
- * array containing all the `features` from each JSON object in the input array.
- */
-function aggregateFeatures(allJson) {
-  return allJson.reduce((acc, itt) => {
-    return acc.concat(itt.features);
-  }, []);
-}
-
-/**
- * The function `aggregateTags` takes an array of features and returns an array of unique tags
- * extracted from the properties of each feature.
- * @param {Array} featuresArr - The `aggregateTags` function takes an array `featuresArr` as input. Each
- *                            element in the `featuresArr` array is expected to be an object with a property `properties` which in
- *                            turn has a property `tags`. The function aims to aggregate unique tags from all the elements in the
- * @return {Array} The `aggregateTags` function is returning an array that contains unique tags extracted from
- * the `featuresArr` array. The function iterates over each item in the `featuresArr` array, extracts
- * the `tags` property from each item, and adds unique tags to the result array. Duplicate tags are
- * skipped to ensure only unique tags are included in the final result.
- */
-function aggregateTags(featuresArr) {
-  return featuresArr.reduce((acc, itt) => {
-    const t = itt.properties.tags;
-    if (acc.includes(t)) {
-      // skip if we've already got this tag
-      return acc;
-    }
-    acc.push(t);
-    return acc;
-  }, []);
-}
-
 /* The below code is using Leaflet library to create a tag filter button on a map. It is creating a
 button that, when clicked, will filter the map based on the tags provided in the `allTags` data
 array. The button will display an icon with the class "fa-filter" from Font Awesome. The
 `filterOnEveryClick` option is set to true, which means that the filter will be applied every time
 the button is clicked. */
-leaflet__WEBPACK_IMPORTED_MODULE_0___default().control.tagFilterButton({
-  data: allTags,
-  icon: '<i class="fa-solid fa-filter"></i>',
-  filterOnEveryClick: true,
-  onSelectionComplete(e) {
-    console.log('selected', e);
-  }
-}).addTo(map);
+// const filters = L.control.tagFilterButton( {
+// 	data: allTags,
+// 	icon: '<i class="fa-solid fa-filter"></i>',
+// 	filterOnEveryClick: true,
+// 	onSelectionComplete( e ) {
+// 		console.log( 'selected', e );
+// 	},
+// } );
+// filters.addTo( map );
 
 /**
  * fixed popup
@@ -1136,6 +967,265 @@ leaflet__WEBPACK_IMPORTED_MODULE_0___default().control.tagFilterButton({
 // 	// back to default position
 // 	map.setView( [ initView.lat, initView.lng ], initView.zoom );
 // }
+
+// function filterDates( features, startDate, endDate ) {
+// 	return features.filter( ( f ) => {
+// 		const targetDate = f.properties.Date;
+// 		return dateInRange( targetDate, startDate, endDate );
+// 	}, [] );
+// }
+
+/**
+ * Timeline stuff
+ */
+
+////////// begin the helper functions //////////
+
+/**
+ * Start Slider Work
+ */
+
+
+// import 'nouislider/dist/nouislider.css';
+
+
+// constants for the slider
+const slider = document.getElementById('map-slider');
+
+// const monthsShort = [
+// 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+// ];
+
+// TO-DO: need to change the months to use the start and end dates...
+// const monthVals = monthsShort.map( ( month ) => Date.parse( month + ' 1, 2020' ) );
+
+// const slider_margin = 20;
+// const slider_step = 5;
+// const slider_min = 0;
+// const slider_max = 100;
+// const timeSlider = noUiSlider.create( slider, {
+// 	start: [ 30, 70 ],
+// 	behaviour: 'drag',
+// 	step: slider_step,
+// 	animate: false, // important for the on('slide') `set` calls to be discrete
+// 	//margin: slider_margin,  // don't set as it's covered in the .on('update') event handler
+// 	connect: true,
+// 	range: {
+// 		min: slider_min,
+// 		max: slider_max,
+// 	},
+// } );
+// function enforce_margin_allowing_drag( values, handle, numeric_values ) {
+// 	if ( Math.round( numeric_values[ 1 ] ) < slider_min + slider_margin ) {
+// 		timeSlider.set( [ null, slider_margin ] );
+// 	} else if ( Math.round( numeric_values[ 0 ] ) > slider_max - slider_margin ) {
+// 		timeSlider.set( [ slider_max - slider_margin, null ] );
+// 	} else if ( Math.round( numeric_values[ 1 ] - numeric_values[ 0 ] ) + slider_step <= slider_margin ) {
+// 		if ( handle ) {
+// 	    var nv = numeric_values[ 1 ] - slider_margin;
+// 	    timeSlider.set( [ nv, null ] );
+// 		} else {
+// 	    var nv = numeric_values[ 0 ] + slider_margin;
+// 	    timeSlider.set( [ null, nv ] );
+// 		}
+// 	}
+// }
+// timeSlider.on( 'update', enforce_margin_allowing_drag );
+
+// implement the noUiSlider
+const timeSlider = nouislider__WEBPACK_IMPORTED_MODULE_8__["default"].create(slider, {
+  // step: ,
+  // behaviour: 'tap-drag',
+  connect: true,
+  animate: false,
+  // limit: 1000000000540,
+  behaviour: 'drag-all',
+  range: {
+    min: time.start,
+    //timestamp( defaultStartDate ),
+    max: time.end //timestamp( defaultEndDate ),
+  },
+  direction: 'ltr',
+  step: 365 * 24 * 60 * 60 * 1000,
+  start: [time.start, time.end - time.range * .8],
+  format: wnumb__WEBPACK_IMPORTED_MODULE_9___default()({
+    decimals: 0
+  })
+  // pips_remove: {
+  // 	mode: 'values',
+  // 	values: monthVals,
+  // 	format: {
+  // 		to( month ) {
+  // 			// custom function to format the months.
+  // 			const targetMonth = new Date( month );
+  // 			if ( window.innerWidth > 740 ) {
+  // 				const monthLabel = monthsShort[ targetMonth.getMonth() ];
+  // 				// console.log( targetMonth.getMonth() );
+  // 				// console.log( monthLabel );
+  // 				return monthLabel;
+  // 			}
+
+  // 			return [];
+  // 		},
+  // 		from( value ) {
+  // 			return value;
+  // 		},
+  // 	},
+  // },
+});
+const hMapArr = getHeatMapArr(verifiedFeatures);
+const colors = {
+  a: {
+    0: 'Black',
+    0.33: 'DarkRed',
+    0.66: 'Yellow',
+    1: 'White'
+  },
+  b: {
+    0.00: 'white',
+    0.5: '#333',
+    .8: 'black'
+  },
+  c: {
+    0: 'Black',
+    0.4: 'Purple',
+    0.6: 'Red',
+    0.8: 'Yellow',
+    1: 'White'
+  },
+  d: {
+    0.00: 'rgb(255,0,255)',
+    0.25: 'rgb(0,0,255)',
+    0.50: 'rgb(0,255,0)',
+    0.75: 'rgb(255,255,0)',
+    1.00: 'rgb(255,0,0)'
+  }
+};
+const heatObj = leaflet__WEBPACK_IMPORTED_MODULE_0___default().heatLayer(hMapArr, {
+  minOpacity: .5,
+  radius: 25,
+  blur: 15,
+  gradient: colors.c
+});
+heatObj.addTo(map);
+
+// puase timeline when user interacts with timeline
+timeSlider.on('start', pauseTimeline);
+timeSlider.on('update', updateMapMarkers);
+timeSlider.on('update', (values, handle, unencoded, tap, positions, noUiSlider) => {
+  // console.log( 'here', values, handle, unencoded, tap, positions, noUiSlider );
+  //updateHeatMap( heatObj, verifiedFeatures, values );
+});
+playTimeline();
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('close-infoBox')) {
+    _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__["default"].close();
+  }
+});
+
+/** map filters */
+const mapfilters = document.querySelector('#filters');
+mapfilters.addEventListener('change', e => {
+  console.log('changed', e.target.value);
+  // map.removeLayer( theGeoJson );
+  tl.checkedFilters = getFilterValue();
+  updateMapMarkers();
+  if (tl.isPaused == 'fine') {
+    const y = verifiedFeatures.filter(f => {
+      return tl.checkedFilters.includes(f.properties.tags.toLowerCase());
+    });
+    console.log('filtered', y);
+    const x = leaflet__WEBPACK_IMPORTED_MODULE_0___default().geoJSON(y, {
+      // filter( a ) {
+      // console.log( 'here', a );
+      // return a.properties.tags = 'Tusnamis';
+      // },
+      pointToLayer(point, latLng) {
+        // const c = new Circle( latLng, 100000 );
+        // c.addEventListener( 'click', ( e ) => {
+        // 	showInfo( e, point );
+        // } );
+        const d = makeMarker(point);
+        return d;
+      },
+      onEachFeature(f, l) {}
+    });
+  }
+  // // console.log( 'checked', checked );
+});
+function getFilterValue() {
+  const checkboxes = document.querySelectorAll('#filters input[type="checkbox"]');
+  const checked = Array.from(checkboxes).reduce((acc, itt) => {
+    // eslint-disable-next-line no-unused-expressions
+    itt.checked && acc.push(itt.value);
+    return acc;
+  }, []);
+  return checked;
+}
+function makeMarker(f) {
+  const featureTags = f.properties.tags.split(',');
+  const coords = f.geometry.coordinates.reverse();
+  let m = false;
+  if (!isNaN(coords[0]) && !isNaN(coords[1])) {
+    m = leaflet__WEBPACK_IMPORTED_MODULE_0___default().marker([...coords], {
+      icon: divIcon,
+      tags: featureTags
+    });
+    // m = new Circle( [ ...coords ], 100000, { tags: featureTags } );
+    // m.setRadius( 5000 );
+    m.addEventListener('click', e => {
+      showInfo(e, f);
+    });
+  }
+  return m;
+}
+function showInfo(e, f) {
+  leaflet__WEBPACK_IMPORTED_MODULE_0___default().DomEvent.stopPropagation(e); // stop marker click from hitting 'map' object.
+  // if we clicked the same marker - clear infobox
+  if (f?.properties?.id && _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__["default"].markerClicked === f.properties.id) {
+    f = false;
+  }
+  _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__["default"].update(f);
+}
+
+/**
+ * The function `aggregateFeatures` takes an array of JSON objects and returns an array containing all
+ * the `features` from each object.
+ * @param {Array} geoJson array - The `aggregateFeatures` function takes an array of JSON objects as input. Each JSON
+ *                        object in the array should have a property named `features`, which is expected to be an array of
+ *                        features. The function then aggregates all the features from each JSON object into a single array
+ *                        and returns it.
+ * @return {Array} The `aggregateFeatures` function takes an array of JSON objects as input and returns an
+ * array containing all the `features` from each JSON object in the input array.
+ */
+function aggregateFeatures(geoJson) {
+  return geoJson.reduce((acc, itt) => {
+    return acc.concat(itt.features);
+  }, []);
+}
+
+/**
+ * The function `aggregateTags` takes an array of features and returns an array of unique tags
+ * extracted from the properties of each feature.
+ * @param {Array} featuresArr - The `aggregateTags` function takes an array `featuresArr` as input. Each
+ *                            element in the `featuresArr` array is expected to be an object with a property `properties` which in
+ *                            turn has a property `tags`. The function aims to aggregate unique tags from all the elements in the
+ * @return {Array} The `aggregateTags` function is returning an array that contains unique tags extracted from
+ * the `featuresArr` array. The function iterates over each item in the `featuresArr` array, extracts
+ * the `tags` property from each item, and adds unique tags to the result array. Duplicate tags are
+ * skipped to ensure only unique tags are included in the final result.
+ */
+function aggregateTags(featuresArr) {
+  return featuresArr.reduce((acc, itt) => {
+    const t = itt.properties.tags;
+    if (acc.includes(t)) {
+      // skip if we've already got this tag
+      return acc;
+    }
+    acc.push(t);
+    return acc;
+  }, []);
+}
 
 /**
  * The function `verifyFeature` checks if a given feature has valid coordinates and a date property.
@@ -1230,232 +1320,85 @@ function dateInRange(targetDate, startDate, endDate) {
     end = new Date(endDate);
   return date > start && date < end;
 }
-
-// function filterDates( features, startDate, endDate ) {
-// 	return features.filter( ( f ) => {
-// 		const targetDate = f.properties.Date;
-// 		return dateInRange( targetDate, startDate, endDate );
-// 	}, [] );
-// }
-
-/**
- * Timeline stuff
- */
-
-////////// begin the helper functions //////////
 function timestamp(str) {
   return new Date(str).getTime();
 }
-
-/**
- * Start Slider Work
- */
-
-
-
-
-
-// constants for the slider
-const slider = document.getElementById('map-slider');
-const defaultStartDate = 'Jan 1,1883';
-const defaultEndDate = 'Dec 1,2020';
-const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-// TO-DO: need to change the months to use the start and end dates...
-const monthVals = monthsShort.map(month => Date.parse(month + ' 1, 2020'));
-const time = {
-  start: timestamp(defaultStartDate),
-  end: timestamp(defaultEndDate)
-};
-// implement the noUiSlider
-const timeSlider = nouislider__WEBPACK_IMPORTED_MODULE_12__["default"].create(slider, {
-  // step: ,
-  behaviour: 'tap-drag',
-  connect: true,
-  range: {
-    min: time.start,
-    //timestamp( defaultStartDate ),
-    max: time.end //timestamp( defaultEndDate ),
-  },
-  direction: 'ltr',
-  step: 24 * 60 * 60 * 1000,
-  start: [timestamp(defaultStartDate), timestamp(defaultStartDate)],
-  format: wnumb__WEBPACK_IMPORTED_MODULE_14___default()({
-    decimals: 0
-  }),
-  pips: {
-    mode: 'values',
-    values: monthVals,
-    format: {
-      to(month) {
-        // custom function to format the months.
-        const targetMonth = new Date(month);
-        if (window.innerWidth > 740) {
-          const monthLabel = monthsShort[targetMonth.getMonth()];
-          console.log(targetMonth.getMonth());
-          console.log(monthLabel);
-          return monthLabel;
-        }
-        return [];
-      },
-      from(value) {
-        return value;
-      }
-    }
-  }
-});
-
-// Create a string representation of the date.
-/**
- * The function formatDate takes a date object as input and returns a formatted string with the month
- * and year.
- * @param {Date} date - The `formatDate` function takes a `Date` object as a parameter and returns a formatted
- *                    string representing the month and year of that date.
- * @return {string} The function `formatDate` is returning a formatted string that includes the short month
- * name and the year of the input date.
- */
-function formatDate(date) {
-  return monthsShort[date.getMonth()] + ', ' + date.getFullYear();
+function difference(a, b) {
+  return Math.abs(a - b);
 }
-const dateValues = [document.getElementById('event-start'), document.getElementById('event-end'), document.getElementById('event-total')];
-timeSlider.on('update', (values, handle) => {
-  updateMapMarkers(map, theGeoJson, values);
-});
-function updateMapMarkers(mapObj, geoJson, values) {
-  // timeSlider.get( true )
+function checkFilter(feature) {
+  return tl.checkedFilters.length === 0 || tl.checkedFilters.includes(feature.properties.tags.toLowerCase());
+}
+function refreshMarkers(layer, newStart, newEnd) {
+  const {
+    feature
+  } = layer;
+  const inRange = dateInRange(feature.properties.Date, newStart, newEnd);
+  const inFilter = checkFilter(feature);
+  if (inRange && inFilter) {
+    layer.addTo(map);
+  } else {
+    map.removeLayer(layer);
+  }
+}
+function updateMapMarkers(values) {
+  if (!values) {
+    values = timeSlider.get(true);
+  }
   const newStart = new Date(parseInt(values[0]));
   const newEnd = new Date(parseInt(values[1]));
-  geoJson.eachLayer(function (layer) {
-    const {
-      feature
-    } = layer;
-    if (dateInRange(feature.properties.Date, newStart, newEnd)) {
-      // console.log( 'inRange', feature.properties.Date );
-      layer.addTo(mapObj);
-    } else {
-      mapObj.removeLayer(layer);
-      // console.log( 'out of range', feature.properties.Date );
-    }
+  theGeoJson.eachLayer(layer => {
+    refreshMarkers(layer, newStart, newEnd);
   });
+  updateHeatMap(verifiedFeatures, values);
 }
-
-// import 'leaflet.heat';
-
-const hMapArr = getHeatMapArr(verifiedFeatures);
 function getHeatMapArr(featuresArr) {
   return featuresArr.map(f => {
     return [f.geometry.coordinates[0], f.geometry.coordinates[1], f.properties.mag];
   });
 }
-const colors = {
-  a: {
-    0: 'Black',
-    0.33: 'DarkRed',
-    0.66: 'Yellow',
-    1: 'White'
-  },
-  b: {
-    0.00: 'white',
-    0.5: '#333',
-    .8: 'black'
-  },
-  c: {
-    0: 'Black',
-    0.4: 'Purple',
-    0.6: 'Red',
-    0.8: 'Yellow',
-    1: 'White'
-  },
-  d: {
-    0.00: 'rgb(255,0,255)',
-    0.25: 'rgb(0,0,255)',
-    0.50: 'rgb(0,255,0)',
-    0.75: 'rgb(255,255,0)',
-    1.00: 'rgb(255,0,0)'
-  }
-};
-const heatObj = leaflet__WEBPACK_IMPORTED_MODULE_0___default().heatLayer(hMapArr, {
-  minOpacity: .5,
-  radius: 25,
-  blur: 15,
-  gradient: colors.c
-});
-heatObj.addTo(map);
-timeSlider.on('update', (values, handle, unencoded, tap, positions, noUiSlider) => {
-  // console.log( 'here', values, handle, unencoded, tap, positions, noUiSlider );
-  updateHeatMap(heatObj, verifiedFeatures, values);
-});
-function filterByType(arr, type) {
-  return arr.filter(feature => {
-    return feature.properties.tags.contains(type);
-  });
-}
-function updateHeatMap(heatLayer, featuresArr, values, type) {
-  // timeSlider.get( true )
+// function filterByType( arr, type ) {
+// 	return arr.filter( ( feature ) => {
+// 		return feature.properties.tags.contains( type );
+// 	} );
+// }
+
+function updateHeatMap(featuresArr, values) {
   const newStart = new Date(parseInt(values[0]));
   const newEnd = new Date(parseInt(values[1]));
-  const filteredTypes = type ? filterByType(featuresArr, type) : featuresArr;
-  console.log('fil', filteredTypes);
   const filteredHeatArr = featuresArr.filter(feature => {
-    return dateInRange(feature.properties.Date, newStart, newEnd);
+    const inRange = dateInRange(feature.properties.Date, newStart, newEnd);
+    const inFilter = checkFilter(feature);
+    return inFilter && inRange && dateInRange(feature.properties.Date, newStart, newEnd);
   });
-  heatLayer.setLatLngs(getHeatMapArr(filteredHeatArr));
+  heatObj.setLatLngs(getHeatMapArr(filteredHeatArr));
 }
-
-// set beginning time of second handle at time-start;
-
-leaflet__WEBPACK_IMPORTED_MODULE_0___default().easyButton('fa-play', function (btn, map) {
-  playTimeline();
-}).addTo(map);
-timeSlider.on('set', (values, handle, unencoded, tap, positions, noUiSlider) => {
-  console.log('v', handle, unencoded, tap, positions);
-});
-let interval;
-const paused = false;
-let active = false;
-let iterations = 0;
-let start = 0;
-playTimeline();
-function getStartTime() {
-  const totalTime = time.end - time.start;
+function pauseTimeline() {
+  tl.isPaused = true;
+}
+function setTimerInterval() {
   const percentComplete = timeSlider.getPositions()[1] / 100;
-  const elapsed = percentComplete * totalTime;
-  const remainingTime = totalTime - elapsed;
-  // console.log( 'remaining time', pos, totalTime, remainingTime );
-  return remainingTime;
+  tl.interval = (1 - percentComplete) * tl.divider;
+  tl.interval = (time.end - time.start) / tl.divider;
 }
 function playTimeline() {
-  // console.log( timeSlider.get( true ) );
-  // console.log( timeSlider.get( true ) );
-  active = !active;
-  // paused = ! paused;
-
-  start = getStartTime();
-  // console.log( 'zero?', start );
-
-  // console.log( 'typeof', interval );
-  if (interval) {
-    // paused = ! paused;
-    clearInterval(interval);
+  setTimerInterval();
+  tl.start = timeSlider.get()[1];
+  if (tl.intervalFxn) {
+    clearInterval(tl.intervalFxn);
     return;
   }
-
-  // timeSlider.set( [ null, time.start ], true, true );
-  let lastTime = time.start;
-  const divider = 3000;
-  const intvl = (time.end - time.start) / divider;
-
-  // console.log( iterations, interval );
-  if (active) {
-    interval = setInterval(() => {
-      iterations++;
-      timeSlider.setHandle(1, lastTime, true);
-      lastTime = lastTime + intvl;
-      if (iterations >= divider) {
-        clearInterval(interval);
+  tl.intervalFxn = setInterval(() => {
+    if (!tl.isPaused) {
+      tl.iterations++;
+      timeSlider.setHandle(1, tl.lastTime, true);
+      tl.lastTime = tl.lastTime + tl.interval;
+      if (tl.iterations >= tl.divider) {
+        clearInterval(tl.intervalFxn);
+        tl.isPaused = true;
       }
-    }, .25);
-  }
+    }
+  }, .25);
 }
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } });
@@ -2138,875 +2081,6 @@ function parser(type) {
 var html = parser("text/html");
 
 var svg = parser("image/svg+xml");
-
-
-/***/ }),
-
-/***/ "./node_modules/leaflet-easybutton/src/easy-button.js":
-/*!************************************************************!*\
-  !*** ./node_modules/leaflet-easybutton/src/easy-button.js ***!
-  \************************************************************/
-/***/ (() => {
-
-(function(){
-
-// This is for grouping buttons into a bar
-// takes an array of `L.easyButton`s and
-// then the usual `.addTo(map)`
-L.Control.EasyBar = L.Control.extend({
-
-  options: {
-    position:       'topleft',  // part of leaflet's defaults
-    id:             null,       // an id to tag the Bar with
-    leafletClasses: true        // use leaflet classes?
-  },
-
-
-  initialize: function(buttons, options){
-
-    if(options){
-      L.Util.setOptions( this, options );
-    }
-
-    this._buildContainer();
-    this._buttons = [];
-
-    for(var i = 0; i < buttons.length; i++){
-      buttons[i]._bar = this;
-      buttons[i]._container = buttons[i].button;
-      this._buttons.push(buttons[i]);
-      this.container.appendChild(buttons[i].button);
-    }
-
-  },
-
-
-  _buildContainer: function(){
-    this._container = this.container = L.DomUtil.create('div', '');
-    this.options.leafletClasses && L.DomUtil.addClass(this.container, 'leaflet-bar easy-button-container leaflet-control');
-    this.options.id && (this.container.id = this.options.id);
-  },
-
-
-  enable: function(){
-    L.DomUtil.addClass(this.container, 'enabled');
-    L.DomUtil.removeClass(this.container, 'disabled');
-    this.container.setAttribute('aria-hidden', 'false');
-    return this;
-  },
-
-
-  disable: function(){
-    L.DomUtil.addClass(this.container, 'disabled');
-    L.DomUtil.removeClass(this.container, 'enabled');
-    this.container.setAttribute('aria-hidden', 'true');
-    return this;
-  },
-
-
-  onAdd: function () {
-    return this.container;
-  },
-
-  addTo: function (map) {
-    this._map = map;
-
-    for(var i = 0; i < this._buttons.length; i++){
-      this._buttons[i]._map = map;
-    }
-
-    var container = this._container = this.onAdd(map),
-        pos = this.getPosition(),
-        corner = map._controlCorners[pos];
-
-    L.DomUtil.addClass(container, 'leaflet-control');
-
-    if (pos.indexOf('bottom') !== -1) {
-      corner.insertBefore(container, corner.firstChild);
-    } else {
-      corner.appendChild(container);
-    }
-
-    return this;
-  }
-
-});
-
-L.easyBar = function(){
-  var args = [L.Control.EasyBar];
-  for(var i = 0; i < arguments.length; i++){
-    args.push( arguments[i] );
-  }
-  return new (Function.prototype.bind.apply(L.Control.EasyBar, args));
-};
-
-// L.EasyButton is the actual buttons
-// can be called without being grouped into a bar
-L.Control.EasyButton = L.Control.extend({
-
-  options: {
-    position:  'topleft',       // part of leaflet's defaults
-
-    id:        null,            // an id to tag the button with
-
-    type:      'replace',       // [(replace|animate)]
-                                // replace swaps out elements
-                                // animate changes classes with all elements inserted
-
-    states:    [],              // state names look like this
-                                // {
-                                //   stateName: 'untracked',
-                                //   onClick: function(){ handle_nav_manually(); };
-                                //   title: 'click to make inactive',
-                                //   icon: 'fa-circle',    // wrapped with <a>
-                                // }
-
-    leafletClasses:   true,     // use leaflet styles for the button
-    tagName:          'button',
-  },
-
-
-
-  initialize: function(icon, onClick, title, id){
-
-    // clear the states manually
-    this.options.states = [];
-
-    // add id to options
-    if(id != null){
-      this.options.id = id;
-    }
-
-    // storage between state functions
-    this.storage = {};
-
-    // is the last item an object?
-    if( typeof arguments[arguments.length-1] === 'object' ){
-
-      // if so, it should be the options
-      L.Util.setOptions( this, arguments[arguments.length-1] );
-    }
-
-    // if there aren't any states in options
-    // use the early params
-    if( this.options.states.length === 0 &&
-        typeof icon  === 'string' &&
-        typeof onClick === 'function'){
-
-      // turn the options object into a state
-      this.options.states.push({
-        icon: icon,
-        onClick: onClick,
-        title: typeof title === 'string' ? title : ''
-      });
-    }
-
-    // curate and move user's states into
-    // the _states for internal use
-    this._states = [];
-
-    for(var i = 0; i < this.options.states.length; i++){
-      this._states.push( new State(this.options.states[i], this) );
-    }
-
-    this._buildButton();
-
-    this._activateState(this._states[0]);
-
-  },
-
-  _buildButton: function(){
-
-    this.button = L.DomUtil.create(this.options.tagName, '');
-
-    if (this.options.tagName === 'button') {
-        this.button.setAttribute('type', 'button');
-    }
-
-    if (this.options.id ){
-      this.button.id = this.options.id;
-    }
-
-    if (this.options.leafletClasses){
-      L.DomUtil.addClass(this.button, 'easy-button-button leaflet-bar-part leaflet-interactive');
-    }
-
-    // don't let double clicks and mousedown get to the map
-    L.DomEvent.addListener(this.button, 'dblclick', L.DomEvent.stop);
-    L.DomEvent.addListener(this.button, 'mousedown', L.DomEvent.stop);
-    L.DomEvent.addListener(this.button, 'mouseup', L.DomEvent.stop);
-
-    // take care of normal clicks
-    L.DomEvent.addListener(this.button,'click', function(e){
-      L.DomEvent.stop(e);
-      this._currentState.onClick(this, this._map ? this._map : null );
-      this._map && this._map.getContainer().focus();
-    }, this);
-
-    // prep the contents of the control
-    if(this.options.type == 'replace'){
-      this.button.appendChild(this._currentState.icon);
-    } else {
-      for(var i=0;i<this._states.length;i++){
-        this.button.appendChild(this._states[i].icon);
-      }
-    }
-  },
-
-
-  _currentState: {
-    // placeholder content
-    stateName: 'unnamed',
-    icon: (function(){ return document.createElement('span'); })()
-  },
-
-
-
-  _states: null, // populated on init
-
-
-
-  state: function(newState){
-
-    // when called with no args, it's a getter
-    if (arguments.length === 0) {
-      return this._currentState.stateName;
-    }
-
-    // activate by name
-    if(typeof newState == 'string'){
-
-      this._activateStateNamed(newState);
-
-    // activate by index
-    } else if (typeof newState == 'number'){
-
-      this._activateState(this._states[newState]);
-    }
-
-    return this;
-  },
-
-
-  _activateStateNamed: function(stateName){
-    for(var i = 0; i < this._states.length; i++){
-      if( this._states[i].stateName == stateName ){
-        this._activateState( this._states[i] );
-      }
-    }
-  },
-
-  _activateState: function(newState){
-
-    if( newState === this._currentState ){
-
-      // don't touch the dom if it'll just be the same after
-      return;
-
-    } else {
-
-      // swap out elements... if you're into that kind of thing
-      if( this.options.type == 'replace' ){
-        this.button.appendChild(newState.icon);
-        this.button.removeChild(this._currentState.icon);
-      }
-
-      if( newState.title ){
-        this.button.title = newState.title;
-      } else {
-        this.button.removeAttribute('title');
-      }
-
-      // update classes for animations
-      for(var i=0;i<this._states.length;i++){
-        L.DomUtil.removeClass(this._states[i].icon, this._currentState.stateName + '-active');
-        L.DomUtil.addClass(this._states[i].icon, newState.stateName + '-active');
-      }
-
-      // update classes for animations
-      L.DomUtil.removeClass(this.button, this._currentState.stateName + '-active');
-      L.DomUtil.addClass(this.button, newState.stateName + '-active');
-
-      // update the record
-      this._currentState = newState;
-
-    }
-  },
-
-  enable: function(){
-    L.DomUtil.addClass(this.button, 'enabled');
-    L.DomUtil.removeClass(this.button, 'disabled');
-    this.button.setAttribute('aria-hidden', 'false');
-    return this;
-  },
-
-  disable: function(){
-    L.DomUtil.addClass(this.button, 'disabled');
-    L.DomUtil.removeClass(this.button, 'enabled');
-    this.button.setAttribute('aria-hidden', 'true');
-    return this;
-  },
-
-  onAdd: function(map){
-    var bar = L.easyBar([this], {
-      position: this.options.position,
-      leafletClasses: this.options.leafletClasses
-    });
-    this._anonymousBar = bar;
-    this._container = bar.container;
-    return this._anonymousBar.container;
-  },
-
-  removeFrom: function (map) {
-    if (this._map === map)
-      this.remove();
-    return this;
-  },
-
-});
-
-L.easyButton = function(/* args will pass automatically */){
-  var args = Array.prototype.concat.apply([L.Control.EasyButton],arguments);
-  return new (Function.prototype.bind.apply(L.Control.EasyButton, args));
-};
-
-/*************************
- *
- * util functions
- *
- *************************/
-
-// constructor for states so only curated
-// states end up getting called
-function State(template, easyButton){
-
-  this.title = template.title;
-  this.stateName = template.stateName ? template.stateName : 'unnamed-state';
-
-  // build the wrapper
-  this.icon = L.DomUtil.create('span', '');
-
-  L.DomUtil.addClass(this.icon, 'button-state state-' + this.stateName.replace(/(^\s*|\s*$)/g,''));
-  this.icon.innerHTML = buildIcon(template.icon);
-  this.onClick = L.Util.bind(template.onClick?template.onClick:function(){}, easyButton);
-}
-
-function buildIcon(ambiguousIconString) {
-
-  var tmpIcon;
-
-  // does this look like html? (i.e. not a class)
-  if( ambiguousIconString.match(/[&;=<>"']/) ){
-
-    // if so, the user should have put in html
-    // so move forward as such
-    tmpIcon = ambiguousIconString;
-
-  // then it wasn't html, so
-  // it's a class list, figure out what kind
-  } else {
-      ambiguousIconString = ambiguousIconString.replace(/(^\s*|\s*$)/g,'');
-      tmpIcon = L.DomUtil.create('span', '');
-
-      if( ambiguousIconString.indexOf('fa-') === 0 ){
-        L.DomUtil.addClass(tmpIcon, 'fa '  + ambiguousIconString)
-      } else if ( ambiguousIconString.indexOf('glyphicon-') === 0 ) {
-        L.DomUtil.addClass(tmpIcon, 'glyphicon ' + ambiguousIconString)
-      } else {
-        L.DomUtil.addClass(tmpIcon, /*rollwithit*/ ambiguousIconString)
-      }
-
-      // make this a string so that it's easy to set innerHTML below
-      tmpIcon = tmpIcon.outerHTML;
-  }
-
-  return tmpIcon;
-}
-
-})();
-
-
-/***/ }),
-
-/***/ "./node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.js":
-/*!*********************************************************************************!*\
-  !*** ./node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.js ***!
-  \*********************************************************************************/
-/***/ (function() {
-
-(function() {
-
-    L.Control.TagFilterButton = L.Control.extend({
-
-        options: {
-            icon: "fa-filter", //buton icon default is fa-filter
-            onSelectionComplete: null, // the callback function for selected tags
-            data: null, // the data to be used for tags popup, it can be array or function
-            clearText: 'clear', // the text of the clear button
-            filterOnEveryClick: false, // if set as true the plugin do filtering operation on every click event on the checkboxes
-            openPopupOnHover: false, // if set as true the popup that contains tags will be open at mouse hover time
-
-            ajaxData: null // it can be used for remote data TODO: implement it!
-        },
-
-        _map: null,
-        _container: null,
-        _easyButton: null,
-        _tagEl: null,
-        _clearEl: null,
-        _filterInfo: null,
-        _selectedTags: [],
-        _invisibles: null,
-        _releatedFilterButtons: null,
-        layerSources: null,
-
-        // GLOBAL FUNCTIONS
-
-        /**
-         * @function: resetCaches
-         * Resets marker caches
-         * @param update: if send as true, the @update function is called after cleaning the cache
-         * */
-        resetCaches: function(update) {
-            if (typeof update !== 'boolean')
-                update = true;
-            this._invisibles = [];
-            if (update) {
-                this.update();
-            }
-        },
-
-        /**
-         * @function: update
-         * Update markers by last selected tags
-         *
-         * */
-        update: function() {
-            var filteredCount = this.layerSources.currentSource.hide.call(this, this.layerSources.currentSource);
-            this._showFilterInfo(filteredCount);
-        },
-
-        /**
-         * @function: hasFiltered
-         * returns true if any tag(s) selected otherwise false
-         *
-         * */
-        hasFiltered: function () {
-          return this._selectedTags.length > 0;
-        },
-
-        /**
-         * @function: registerCustomSource
-         * Register @source object for filtering markers by tags. If you want to use this function
-         * you must implement @hide function.
-         * @param source reference of the new marker source. It must have name and source item
-         *
-         * */
-        registerCustomSource: function(source) {
-            if (source.name && source.source && typeof source.source.hide === 'function') {
-                this.layerSources.sources[source.name] = source.source;
-            } else {
-                throw 'Layer source is incompatible';
-            }
-        },
-
-        /**
-         * @function: enablePruneCluster
-         * @param pruneClusterInstance adds pruneCluster reference to layersources
-         *
-         * */
-        enablePruneCluster: function (pruneClusterInstance) {
-            this.registerCustomSource({
-                "name": "pruneCluster",
-                "source": {
-                    pruneCluster: pruneClusterInstance,
-                    hide: function(layerSource) {
-                        var toBeRemovedFromInvisibles = [], i, j;
-
-                        for (i = 0; i < this._invisibles.length; i++) {
-                            for (j = 0; j < this._invisibles[i].data.tags.length; j++) {
-                                if (this._selectedTags.length == 0 || this._selectedTags.indexOf(this._invisibles[i].data.tags[j]) !== -1) {
-                                    layerSource.pruneCluster.RegisterMarker(this._invisibles[i]);
-                                    toBeRemovedFromInvisibles.push(i);
-                                    break;
-                                }
-                            }
-                        }
-
-                        while(toBeRemovedFromInvisibles.length > 0) {
-                            this._invisibles.splice(toBeRemovedFromInvisibles.pop(), 1);
-                        }
-
-                        var removedMarkers = [];
-                        var totalCount = 0;
-
-                        if (this._selectedTags.length > 0) {
-
-                            var releatedLayers = [];
-
-                            for (var r = 0; r < this._releatedFilterButtons.length; r++) {
-                                releatedLayers = releatedLayers.concat(this._releatedFilterButtons[r].getInvisibles());
-                            }
-
-                            var markers = layerSource.pruneCluster.GetMarkers();
-                            for (i = 0; i < markers.length; i++) {
-                                if (releatedLayers.indexOf(markers[i]) == -1 && markers[i].data && markers[i].data.tags) {
-                                    totalCount++;
-                                    var found = false;
-                                    for (var j = 0; j < markers[i].data.tags.length; j++) {
-                                        found = this._selectedTags.indexOf(markers[i].data.tags[j]) !== -1;
-                                        if (found) {
-                                            break;
-                                        }
-                                    }
-                                    if (!found) {
-                                        removedMarkers.push(markers[i]);
-                                    }
-                                }
-                            }
-
-                            for (i = 0; i < removedMarkers.length; i++) {
-                                this._invisibles.push(removedMarkers[i]);
-                            }
-
-                            layerSource.pruneCluster.RemoveMarkers(removedMarkers);
-
-                        }
-
-
-                        layerSource.pruneCluster.ProcessView();
-
-                        return totalCount - removedMarkers.length;
-                    }
-                }
-            });
-
-            this.layerSources.currentSource = this.layerSources.sources["pruneCluster"];
-        },
-
-        /**
-         * @function: addToReleated
-         * @param other adds another linked tagFilterButton reference to _releatedFilterButtons
-         *
-         * */
-        addToReleated: function(other) {
-            if (other && other instanceof L.Control.TagFilterButton && this._releatedFilterButtons.indexOf(other) == -1) {
-                this._releatedFilterButtons.push(other);
-                return other.addToReleated(this);
-            }
-            console.error("could not add tagFilterButton instance to releated");
-            return false;
-        },
-
-        /**
-         * @function: getInvisibles
-         * @param other gets invisibles layers hiding by this plugin
-         *
-         * */
-        getInvisibles: function() {
-            return this._invisibles;
-        },
-
-        _prepareLayerSources: function() {
-
-            this.layerSources = new Object();
-            this.layerSources["sources"] = new Object();
-
-           this.registerCustomSource({
-                "name": "default",
-                "source": {
-                    hide: function() {
-
-                        var releatedLayers = [];
-
-                        for (var r = 0; r < this._releatedFilterButtons.length; r++) {
-                            releatedLayers = releatedLayers.concat(this._releatedFilterButtons[r].getInvisibles());
-                        }
-
-                        var toBeRemovedFromInvisibles = [], i;
-
-                        for (i = 0; i < this._invisibles.length; i++) {
-                            if (releatedLayers.indexOf(this._invisibles[i]) == -1) {
-                                for (j = 0; j < this._invisibles[i].options.tags.length; j++) {
-                                    if (this._selectedTags.length == 0 || this._selectedTags.indexOf(this._invisibles[i].options.tags[j]) !== -1) {
-                                        this._map.addLayer(this._invisibles[i]);
-                                        toBeRemovedFromInvisibles.push(i);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        while(toBeRemovedFromInvisibles.length > 0) {
-                            this._invisibles.splice(toBeRemovedFromInvisibles.pop(), 1);
-                        }
-
-                        var removedMarkers = [];
-                        var totalCount = 0;
-
-                        if (this._selectedTags.length > 0) {
-
-                            this._map.eachLayer(function(layer) {
-                                if (layer && layer.options && layer.options.tags) {
-                                    totalCount++;
-                                    if (releatedLayers.indexOf(layer) == -1) {
-                                        var found = false;
-                                        for (var i = 0; i < layer.options.tags.length; i++) {
-                                            found = this._selectedTags.indexOf(layer.options.tags[i]) !== -1;
-                                            if (found) {
-                                                break;
-                                            }
-                                        }
-                                        if (!found) {
-                                            removedMarkers.push(layer);
-                                        }
-                                    }
-                                }
-                            }.bind(this));
-
-                            for (i = 0; i < removedMarkers.length; i++) {
-                                this._map.removeLayer(removedMarkers[i]);
-                                this._invisibles.push(removedMarkers[i]);
-                            }
-
-                        }
-
-                        return totalCount - removedMarkers.length;
-                    }
-                }
-            });
-            this.layerSources.currentSource = this.layerSources.sources["default"];
-        },
-
-        _showFilterInfo: function(filteredCount) {
-            if (this._selectedTags.length > 0) {
-                this._filterInfo.innerText = filteredCount.toString();
-                this._filterInfo.style.display = "";
-            } else {
-                this._filterInfo.style.display = "none";
-            }
-        },
-
-        _checkItem: function(item) {
-            item.getElementsByClassName('checkbox')[0].style.display = "inline-block";
-            item.dataset.checked = "checked";
-        },
-
-        _uncheckItem: function(item) {
-            item.dataset.checked = "";
-            item.getElementsByClassName('checkbox')[0].style.display = "none";
-        },
-
-        _onClickToItem: function(e) {
-            L.DomEvent.stop(e);
-            var li = this.element;
-            var context = this.context;
-            if (!li.dataset.checked) {
-                context._checkItem(li);
-            } else {
-                context._uncheckItem(li);
-            }
-            if (context.options.filterOnEveryClick) {
-                context.filter.call(context);
-            }
-        },
-
-        _preparePopup: function(data) {
-            
-            this._tagEl.innerHTML = '';
-
-            for (var i = 0; i < data.length; i++) {
-                var li = L.DomUtil.create('li', 'ripple', this._tagEl);
-                var checkbox = L.DomUtil.create('span', 'checkbox', li);
-                var a = L.DomUtil.create('a', '', li);
-                var text = data[i];
-                var value = data[i];
-                if (typeof text == 'object' && Object.keys(data[i]).length == 2) { // key,value
-                    text = data[i].name;
-                    value = data[i].value;
-                }
-                
-                var checked = this._selectedTags.indexOf(value) !== -1;
-                if (checked) {
-                    checkbox.style.display = "inline-block";
-                    li.dataset.checked = "checked";
-                }
-                checkbox.innerHTML= "&#10004;";
-                li.dataset.value = value;
-                a.innerText = text;
-
-                L.DomEvent.addListener(li, 'dblclick', this._onClickToItem.bind({ context: this, element: li }));
-                L.DomEvent.addListener(li, 'click', this._onClickToItem.bind({ context: this, element: li }));
-                
-                L.DomEvent.addListener(a, 'dblclick', function(e) {
-                    L.DomEvent.stop(e);
-                    this.context._onClickToItem.call(this, e);
-                }.bind({ context: this, element: li }));
-
-                L.DomEvent.addListener(a, 'click', function(e) {
-                    L.DomEvent.stop(e);
-                    this.context._onClickToItem.call(this, e);
-                }.bind({ context: this, element: li }));
-
-
-            }
-            this._container.style.display = "block";
-        },
-
-        _clearSelections: function(e) {
-            L.DomEvent.stop(e);
-            this._selectedTags = [];
-            var childCount = this._tagEl.childElementCount,
-                children = this._tagEl.children,
-                childCheckbox, i;
-
-            this._selectedTags = [];
-
-            for (i = 0; i < childCount; i++) {
-                childCheckbox = children[i];
-                if (childCheckbox) {
-                    this._uncheckItem(childCheckbox);
-                }
-            }
-
-            if (this.options.filterOnEveryClick) {
-                this.filter();
-            }
-        },
-
-        _showTagFilterPopup: function() {
-
-            if (this._tagFilterPopupIsOpen()) {
-                return;
-            }
-
-            this._easyButton.button.style.display = "none";
-            this._filterInfo.style.display = "none";
-
-            if (!this._container) {
-                throw 'container is not initialized!';
-            }
-
-            if (!this.options.data && !this.options.ajaxData) {
-                throw 'data is empty!';
-            }
-
-            if (this.options.data) {
-                if (typeof this.options.data === 'function') {
-                    this._preparePopup(this.options.data());
-                } else {
-                    this._preparePopup(this.options.data);
-                }
-            }
-
-        },
-
-        _tagFilterPopupIsOpen: function() {
-            return this._container.style.display == 'block';
-        },
-
-        filter: function(withTags) {
-            var checkboxContainer = (this._container.getElementsByTagName('div')[0]),
-                childCount = this._tagEl.childElementCount,
-                children = this._tagEl.children,
-                childCheckbox, i, j;
-
-            this._selectedTags = [];
-
-            if (withTags) {
-                var acceptingTags = [];
-                for (i = 0; i < withTags.length; i++) {
-                    if (this.options.data.indexOf(withTags[i]) !== -1) {
-                        acceptingTags.push(withTags[i]);
-                    }
-                }
-                withTags = acceptingTags;
-            }
-
-            if (!withTags || !withTags.length) {
-                for (i = 0; i < childCount; i++) {
-                    childCheckbox = children[i];
-                    if (childCheckbox && childCheckbox.dataset.checked) {
-                        this._selectedTags.push(childCheckbox.dataset.value);
-                    }
-                }
-            } else {
-                this._selectedTags = withTags;
-            }
-
-            var filteredCount = this.layerSources.currentSource.hide.call(this, this.layerSources.currentSource);
-            this._showFilterInfo(filteredCount);
-
-            if (this.options.onSelectionComplete && typeof this.options.onSelectionComplete == 'function') {
-                this.options.onSelectionComplete.call(this, this._selectedTags);
-            }
-        },
-
-        hide: function(accept) {
-            if (this._container && (this._container.style.display == "none" || this._container.style.display == "")) {
-                return;
-            }
-            if (this._container) {
-                this._container.style.display = "none";
-            }
-            this.filter();
-            this._easyButton.button.style.display = "block";
-        },
-
-        initialize: function(options) {
-            this._invisibles = [];
-            this._releatedFilterButtons = [];
-            L.Util.setOptions(this, options || {});
-            this._prepareLayerSources();
-        },
-
-        addTo: function(map) {
-            this._map = map;
-            if (this.options.openPopupOnHover) {
-                this._easyButton = L.easyButton(this.options.icon, function() {
-                }).addTo(map);
-                L.DomEvent.addListener(this._easyButton._container, 'mouseover', this._showTagFilterPopup.bind(this));
-            } else {
-                this._easyButton = L.easyButton(this.options.icon, this._showTagFilterPopup.bind(this)).addTo(map);
-            }
-            this._container = L.DomUtil.create('div', 'tag-filter-tags-container', this._easyButton._container);
-
-            if (!L.Browser.touch) {
-                L.DomEvent.disableClickPropagation(this._container);
-                L.DomEvent.disableScrollPropagation(this._container);
-            } else {
-                L.DomEvent.disableClickPropagation(this._container);
-                L.DomEvent.disableScrollPropagation(this._container);
-            }
-
-            this._filterInfo = L.DomUtil.create('span', 'filter-info-box', this._easyButton._container);
-            this._showFilterInfo(0);
-
-            this._clearEl = L.DomUtil.create('ul', 'header', this._container);
-            this._clearEl.innerHTML = "<li class='ripple'><a>" + this.options.clearText + "</a></li>";
-
-            L.DomEvent.addListener(this._clearEl.getElementsByTagName('a')[0], 'click', this._clearSelections.bind(this));
-            L.DomEvent.addListener(this._clearEl.getElementsByTagName('li')[0], 'click', this._clearSelections.bind(this));
-
-            this._tagEl = L.DomUtil.create('ul', '', this._container);
-            this._map.on('dragstart click', this.hide, this);
-            L.DomEvent.addListener(this._container, 'dblclick', L.DomEvent.stop);
-            L.DomEvent.addListener(this._container, 'click', L.DomEvent.stop);
-            return this;
-        },
-
-        onRemove: function(map) {
-            this._container.parentNode.removeChild(this._container);
-            return this;
-        }
-
-    });
-
-    L.control.tagFilterButton = function(options) {
-        return new L.Control.TagFilterButton(options);
-    };
-
-}).call(this);
 
 
 /***/ }),
@@ -17532,62 +16606,10 @@ function buildIcon(ambiguousIconString) {
 
 /***/ }),
 
-/***/ "./node_modules/@fortawesome/fontawesome-free/css/all.min.css":
-/*!********************************************************************!*\
-  !*** ./node_modules/@fortawesome/fontawesome-free/css/all.min.css ***!
-  \********************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-
-/***/ }),
-
-/***/ "./node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.css":
-/*!**********************************************************************************!*\
-  !*** ./node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.css ***!
-  \**********************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-
-/***/ }),
-
 /***/ "./node_modules/leaflet/dist/leaflet.css":
 /*!***********************************************!*\
   !*** ./node_modules/leaflet/dist/leaflet.css ***!
   \***********************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-
-/***/ }),
-
-/***/ "./node_modules/nouislider/dist/nouislider.css":
-/*!*****************************************************!*\
-  !*** ./node_modules/nouislider/dist/nouislider.css ***!
-  \*****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-
-/***/ }),
-
-/***/ "./src/scripts/mapInfoPane.css":
-/*!*************************************!*\
-  !*** ./src/scripts/mapInfoPane.css ***!
-  \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";

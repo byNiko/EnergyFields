@@ -64,46 +64,48 @@ get_header();
 				endif;
 				if (count($exhibits)) :
 		?>
-					<div class="container mt-section">
-						<header>
-							<h2 class="h2 color-black">
-								<?= $location->get_name(); ?>
-							</h2>
-						</header>
-						<div class="flex-row __3x flex-wrap gap">
-							<?php
+		<div class="container mt-section">
+			<header>
+				<h2 class="h2 color-black">
+					<?= $location->get_name(); ?>
+				</h2>
+			</header>
+			<div class="flex-row __3x flex-wrap gap">
+				<?php
 							foreach ($exhibits as $art) :
 								echo $art->get_card('box-shadow');
 							endforeach;
 							?>
-						</div>
-					</div>
+			</div>
+		</div>
 		<?php
 				endif;
 			endforeach;
 		endif;
 		?>
 		<?php if (count($spotlights)) : ?>
-			<div id="spotlights" class="spotlights-wrapper order--first mt-section">
-				<div class="container">
-					<header>
-						<h2 class="h2 color-black fz-lg">
-							Spotlight
-						</h2>
-					</header>
-					<div class="spotlight-items flex-column gap">
-						<?php foreach ($spotlights as $art) : ?>
-							<div class="spotlight-item flex-column gap">
-								<div class="flex-row gap">
-									<div class="col flex-1-3">
-										<?php echo $art->get_card(); ?>
-									</div>
+		<div id="spotlights" class="spotlights-wrapper  mt-section">
+			<div class="container">
+				<header class="d-none">
+					<h2 class="h2 color-black fz-lg">
+						Spotlight
+					</h2>
+				</header>
+				<div class="spotlight-items flex-column gap">
+					<?php foreach ($spotlights as $art) : ?>
 
-									<div class="col">
-										<h2 class="h2 color-black">
-											<?php echo $art->get_title(); ?>
-										</h2>
-										<?php
+					<div class="flex-row gap">
+						<div class="col flex-1-3">
+							<?php echo $art->get_card(); ?>
+						</div>
+
+						<div class="col">
+							<a class="no-underline" href="<?= $art->get_permalink();?> ">
+								<h2 class="h2 color-black">
+									<?= $art->get_locations()[0]->post_title ?>
+								</h2>
+							</a>
+							<?php
 										// get the first event
 										$start = $art->get_event_times()[0]['start'];
 										$end = array_pop($art->get_event_times())['end'];
@@ -111,13 +113,13 @@ get_header();
 										$end = date_format(date_create($end), "M d, Y");
 										echo get_arrow_with_date($start, $end, 'heading-sm');
 										?>
-									</div>
-								</div>
-							</div>
-						<?php endforeach; ?>
+						</div>
 					</div>
+					<!-- </a> -->
+					<?php endforeach; ?>
 				</div>
 			</div>
+		</div>
 		<?php endif; ?>
 
 	</section>

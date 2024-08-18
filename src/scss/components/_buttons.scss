@@ -7,7 +7,10 @@
 	border: 1px solid (var(--color));
 	transition: background-color .2s, color .2s;
 	padding: 1rem 1.5rem;
+	font-weight: 600;
 	display: inline-block;	
+	text-transform: uppercase;
+	font-family: var(--ff-heading-normal);
 	&:hover {
 		background-color: var(--color);
 		color: var(--background-color)
@@ -18,4 +21,10 @@
 	--background-color: var(--color-accent);
 	--color: var(--white);
 	border: 1px solid var(--color-accent);
+}
+
+.button--back-to-top .svg-arrow-up{
+	fill: currentColor;
+	height: 1.2rem;
+	width: .95rem;
 }

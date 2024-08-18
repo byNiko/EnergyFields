@@ -13,6 +13,7 @@ const csvSrc = {
 };
 
 const csvSrcIds = {
+	earthquakes_new: '1JwyeQcfNfsVtJBuvyehrqKuTieCrB5dTaBkjx5ogGxA',
 	earthquakes: '2PACX-1vT4H7hIFfHmMN7zsyAiK80m2D3tJYtI14SYbR4dpnJyy19cMWFPax_L5s3VO1tDuTuiq_F8_UMNovWz',
 	volcanos: '2PACX-1vSaVHXlEsLrHOLo3JKbq0O0vzPJ-xq-V9aq38l9I6pw6PDK6Hwvq-psboedz5k_dbbERXb9Adsy4cyF',
 	tsunamis: '2PACX-1vROhJHueNXQIrnKmUa2PllI-Lm0mRjmcSiB7x-00Q4-d9uFcG9BlIunLSgEN9ekN5dm7L3ABkFWEDul',

@@ -46,7 +46,9 @@
 .justify--center {
 	justify-content: center;
 }
-
+.justify--space-between{
+	justify-content: space-between;
+}
 .box-shadow {
 	box-shadow: var(--box-shadow);
 }
@@ -56,4 +58,8 @@
 	@include bp(md){
 		display: flex!important;
 	}
+}
+
+.d-none {
+	display: none!important;
 }

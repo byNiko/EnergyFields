@@ -12,6 +12,19 @@
 
 }
 
+
+@mixin cq($bp, $instruction: "min-width") {
+
+  @if map.get($bps, $bp) {
+    @container (#{$instruction}: map.get(map.get($bps, #{$bp}), "breakpoint")) {
+      @content;
+    }
+  }
+
+}
+
+
+
 @mixin visually-hidden() {
   width: 1px !important;
   height: 1px !important;

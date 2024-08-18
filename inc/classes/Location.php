@@ -35,4 +35,51 @@ class Location {
 	public function get_parking() {
 		return get_field('parking', $this->ID);
 	}
+
+	public function get_directions_link(){
+		$address = $this->get_address();
+		$str =
+				urlencode($address['street_number']) . "+"
+				. urlencode($address['street_name']) . "%2C+"
+				. urlencode($address['city']) . "%2C+"
+				. urlencode($address['state']) . "+"
+				. urlencode($address['zip_code']);
+			// $map_url = "//maps.google.com/?q=$str";
+			return "https://www.google.com/maps/dir/?api=1&destination=$str";
+
+	}
+	public function get_address_block(){
+		$address = $this->get_address();
+$pattern = '
+<div class="address">
+%s
+</div>
+<div class="address">
+%s %s
+</div>
+<div class="address">
+%s %s, %s
+</div>
+';
+
+		$format = wp_sprintf($pattern,
+		$address['name'],  
+		$address['street_number'], 
+		$address['street_name'],
+		$address['city'], 
+		$address['state'], 
+		$address['zip_code']
+	);
+		return $format;
+
+	}
+	public function get_address_block_with_link(){
+		$map_url = $this->get_directions_link();
+		$address_block = $this->get_address_block();
+
+		return wp_sprintf('<a href="%s">%s</a>',
+		$map_url,
+		$address_block
+	);
+	}
 }

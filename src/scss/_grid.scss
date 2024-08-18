@@ -26,9 +26,19 @@
 	max-width: none;
 }
 
+.grid {
+	display: grid;
+}
 .flex-column {
 	display: flex;
 	flex-direction: column;
+}
+
+.flex-column--sm{
+	@extend .flex-column;
+	@include bp(md){
+		flex-direction:row;
+	}
 }
 
 .order--0 {

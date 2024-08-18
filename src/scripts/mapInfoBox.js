@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import toDegrees from './mapToDegrees.js';
 import { ios, fetchJson } from './mapFunctions.js';
 
@@ -9,114 +10,108 @@ import getTime from './mapGetTime.js';
 const emptyBoxText = ios()
 	? `Best viewed on tablet or desktop. If you’re on IOS please click the play button`
 	: 'Click on a marker';
-const infoBox = L.control( { position: 'bottomleft' } );
+// const infoBox = L.control( { position: 'bottomleft' } );
+const infoBox = document.querySelector( '#mapInfoBox .infoBox' );
 
-infoBox.Chart = false;
+// infoBox.Chart = false;
 infoBox.markerClicked = false;
-infoBox.onAdd = function( map ) {
-	this._div = L.DomUtil.create( 'div', 'infoBox' ); // create a div with a class "info"
-	this.update();
-	return this._div;
+
+// infoBox.onAdd = function( map ) {
+// 	this._div = L.DomUtil.create( 'div', 'infoBox' ); // create a div with a class "info"
+// 	this.update();
+// 	return this._div;
+// };
+infoBox.close = function() {
+	this.closest( '.mapInfoBoxContainer' ).classList.add( 'isHidden' );
 };
 
 // method that we will use to update the control based on feature properties passed
 infoBox.update = async function( feature ) {
-	const infoEl = this._div;
+	this.closest( '.mapInfoBoxContainer' ).classList.remove( 'isHidden' );
+	const infoEl = this;
 
 	if ( ! feature ) {
 		infoBox.markerClicked = false;
 		infoEl.classList.add( 'is-empty' );
-		infoEl.innerHTML = `<div class="">${ emptyBoxText }</div>`;
+		infoEl.innerHTML = `
+			<header class="infoBox--header">
+		<div class="infoBox--title">
+		${ emptyBoxText }
+		</div>
+		<button class="close-infoBox">X</button>
+	</header>`;
+		infoBox.close();
 		return;
 	}
-	console.log( 'got here', infoBox, feature );
 	infoBox.markerClicked = feature.properties.id;
 	infoEl.classList.remove( 'is-empty' );
 	infoEl.innerHTML = makeInfoBoxHtml( feature );
-	// makeSlider();
-	// if ( feature.properties.chartColors ) {
-	// 	infoBox.Chart = makeChart( feature );
-	// }
-	//makeInfoBoxImg( feature, infoEl );
+	setContainerMaxHeight();
 };
 
-// async function makeInfoBoxImg( feature, infoEl ) {
-// 	const slideWrapper = infoEl.querySelector( '.popup--slide-wrapper' );
-// 	const targetDiv = document.querySelector( '.injected-content' );
-// 	if ( ! slideWrapper || ! targetDiv ) {
-// 		return;
-// 	}
+// infoBox.update();
+infoBox.close();
 
-// 	const mediaData = await fetchJson( `${ mediaEndpoint }/${ feature.properties.userData.data.dl_meta.featured_image }` );
-// 	if ( mediaData ) {
-// 		const img = ( () => {
-// 			const imgSrc = mediaData.media_details.sizes.thumbnail.source_url;
-// 			const image = document.createElement( 'img' );
-// 			image.src = imgSrc;
-// 			return image;
-// 		} )();
-// 		if ( img.src !== null ) {
-// 			slideWrapper.classList.add( 'has-slides' );
-// 			targetDiv.append( img );
-// 		}
-// 	}
-// }
-
-// function makeSliderWrapper( feature ) {
-// 	return `<div class="popup--slide-wrapper">
-//     <div class="popup--slide">
-//         <div class="chart--canvas-wrapper">
-//             <canvas class="chart--canvas" id="chart-${ feature.properties.id }"></canvas>
-//         </div>
-//         <!-- /chart--canvas-wrapper-->
-//     </div>
-//     <!-- /popup--slide -->
-//     <div class="popup--slide">
-//         <div class="injected-content"></div>
-//     </div>
-//     <!-- popup--slide-->
-//     <div class="slide--controls">
-//         <button class="popup--slide-btn popup--slide-btn-next">></button>
-//         <button class="popup--slide-btn popup--slide-btn-prev"><</button>
-//     </div>
-//     <!-- /slide--control-->
-// </div>
-// <!--/popup--slide-wraper-->`;
-// }
 function makeInfoBoxHeader( feature ) {
 	const props = feature.properties;
-	console.log( 'location', props );
+	const date = new Date( props.Date );
 	return `
-	<header class="infoBox-header">
-	<div class="infoBox--event-name">${ props.Name }</div>
-	<div class="infoBox--province">
-	<div class='infoBox--title'>Location</div>
-  ${ props.Location }
-  </div>
-  <div class="infoBox--latLng">
-  <div class="infoBox--title">Lat/Lng:</div>
-  ${ toDegrees(
+	<header class="infoBox--header">
+		<div class="infoBox--title">
+			<div class="infoBox--year">${ date.getFullYear() }</div>
+			<div class="infoBox--location">${ props.Location }</div>
+		</div>
+		<button class="close-infoBox">X</button>
+	</header>
+	<div class='infoBox-section name'>
+		<div class="infoBox--value">
+		${ props.Name }
+		</div>
+	</div>
+	<div class="infoBox-section magnitude">
+		<div class="infoBox--title">Magnitude</div>
+		<div class="infoBox--value" >${ props.Magnitude } <span class="magnitude-unit">(${ props.unit })</span></div>
+	</div>
+	<div class='infoBox-section impact'>
+		<div class="infoBox--title">Impact</div>
+		<div class="infoBox--value" >${ props.Impact }</div>
+	</div>
+	<div class='infoBox-section latLng'>
+		<div class="infoBox--value">
+		${ toDegrees(
 		feature.geometry.coordinates[ 1 ], // LNG
 		feature.geometry.coordinates[ 0 ] // LAT
 	) }
-  </div>
-  <div class="infoBox--time-wrap">
-  <div class="infoBox--title">Year:</div>
-  <div class="infoBox--time">${ props.Year }</div>
-  </div>
-  </header>`;
+		</div>
+	</div>
+</div>
+  `;
 }
 function makeInfoBoxHtml( feature ) {
 	let html = '';
 	html += makeInfoBoxHeader( feature );
-	// if ( feature.properties.chartColors ) {
-	// 	html += makeSliderWrapper( feature );
-	// }
-	html += `
-	<div class='infoBox--title'>Impact</div>
-	<div class='infobox__content'>${ feature.properties.Impact }</div>
-	`;
 	return html;
 }
+
+function isOverflowY( element ) {
+	return element.scrollHeight !== Math.max( element.offsetHeight, element.clientHeight );
+}
+
+const setContainerMaxHeight = () => {
+	const infoContainer = document.querySelector( '#overlay-map-info-container' );
+	const mapInfoBox = infoContainer.querySelector( '.mapInfoBoxContainer' );
+	const ui_el = mapInfoBox.querySelector( '.map_ui_el' );
+
+	mapInfoBox.classList.remove( 'isOverflow' );
+
+	const h = infoContainer.offsetHeight;
+	const sliderH = document.querySelector( '.slider-container' ).offsetHeight;
+
+	ui_el.style.maxHeight = `${ h - sliderH - 64 }px`;
+	if ( isOverflowY( mapInfoBox ) ) {
+		mapInfoBox.classList.add( 'isOverflow' );
+	}
+};
+// setContainerMaxHeight();
 
 export default infoBox;

@@ -20,7 +20,7 @@ html,body {
 .h6 {
 	text-transform: uppercase;
 	font-weight: 600;
-		letter-spacing: -1px;
+		letter-spacing: .05em;
 		color: var(--color-accent);
 		font-family: var(--ff-header-normal);
 	&.color-black{
@@ -37,7 +37,7 @@ html,body {
 	font-family: var(--ff-header-normal);
 }
 
-.h1 {font-size: var(--fz-xxl);}
+.h1 {font-size: var(--fz-xxxl);}
 .h2 {font-size: var(--fz-xl);}
 .h3 {font-size: var(--fz-lg);}
 .h4 {font-size: var(--fz-md);}
@@ -61,12 +61,13 @@ html,body {
 	margin-bottom: var(--vert-body-spacer);
 }
 
-a:not(.block-content-link):not(.button):not(.art-work__card ):not(.nav-link):not(.inpage-link):not(.sidebar__content) {
+a:not(.block-content-link):not(.button):not(.art-work__card ):not(.nav-link):not(.inpage-link):not(.sidebar__content):not(.no-underline) {
 	color: var(--color-accent);
-	text-decoration: underline;
-	text-decoration-thickness: 2px;
-	text-underline-offset: .3em;
+	text-decoration: underline;    
+	text-decoration-thickness: 1px;
+    text-underline-offset: 0.1em;
 	transition: color .2s, border-color .2s;
+	letter-spacing: .05em;
 	&:hover {
 		color: var(--color-text);
 	}
