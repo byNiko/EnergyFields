@@ -1,9 +1,14 @@
+@use '../abstracts/mixins' as *;
 /**** Custom styles for noUiSlider ****/
 .map-slider {
+	--dim: 34px;
 	--primary: var(--color-accent);
 	--primary-light: #E7E3DC;
-	--dim: 24px;
-	height: calc(.25 * var(--dim))
+	height: calc(.25 * var(--dim));
+	@include bp(sm){
+		--dim: 24px;
+		
+	}
 }
 
 .noUi-connects{

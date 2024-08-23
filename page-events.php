@@ -2,7 +2,7 @@
 get_header();
 $future_events = (new Byniko())->get_all_future_events();
 ?>
-<div class="container">
+
 	<header class="entry-header ">
 		<?php //the_title('<h1 class="h1 entry-title has-arrow">', '</h1>'); 
 		?>
@@ -33,7 +33,6 @@ $future_events = (new Byniko())->get_all_future_events();
 						<a class="block-content-link" href="<?= $artwork->get_permalink(); ?>">
 							<div id="<?= sanitize_title($artwork->get_title()); ?>" class="event-card has-matte">
 								<div class="event-card__inner">
-
 									<div class="event-card__daytime-wrap has-matte">
 										<div class="event-card__day-of-week">
 											<?php echo date_format($start, "l"); ?>
@@ -51,8 +50,8 @@ $future_events = (new Byniko())->get_all_future_events();
 
 									</div>
 									<div class="event-card__info-wrapper">
-										<header>
-											<div class="event-card__event-category">Category</div>
+										<header class="event-card__header">
+											<div class="event-card__event-category"><?= $artwork->get_categories(); ?></div>
 											<h2 class="event-card__event-name">
 												<?= $artwork->get_title(); ?>
 											</h2>
@@ -79,8 +78,10 @@ $future_events = (new Byniko())->get_all_future_events();
 										<?php endif; ?>
 									</div>
 									<div class="event-card__image__wrapper">
+										<div class="inner-img-wrap" style="background-image: url(<?= $artwork->get_main_img_url('byniko-big-thumb') ;?>)">
 										<?php
-										echo $artwork->get_main_image('medium', array('class' => "img-fluid")); ?>
+										// echo $artwork->get_main_image('medium', array('class' => "img-fluid")); ?>
+										</div>
 									</div>
 
 								</div>
@@ -92,7 +93,7 @@ $future_events = (new Byniko())->get_all_future_events();
 			endif; ?>
 		</main><!-- #main -->
 	</div>
-</div>
+
 <?php
 
 

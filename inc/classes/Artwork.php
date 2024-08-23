@@ -83,7 +83,9 @@ class Artwork {
 			implode(',', $this->get_artist_names())
 		);
 	}
-
+	public function get_main_img_url($size = 'full'){
+		return wp_get_attachment_image_url($this->main_image_id, $size);
+	}
 	public function get_main_image($size = 'full', $arr = []) {
 		return wp_get_attachment_image($this->main_image_id, $size, null, $arr);
 	}
@@ -108,5 +110,9 @@ class Artwork {
 	}
 	public function get_title() {
 		return $this->post->post_title;
+	}
+
+	public function get_categories(){
+		return implode(' | ', wp_get_post_terms($this->ID, 'event-type', array( 'fields' => 'names' )));
 	}
 }

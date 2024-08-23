@@ -18,7 +18,7 @@ get_header();
 
 <div id="overlay-map-info-container" class="overlay-map-info-container">
 	<div class="inner-map-info-container">
-	
+
 		<div id="mapInfoBox" class="mapInfoBoxContainer">
 			<div class="map_ui_el">
 				<div class="infoBox"></div>
@@ -27,18 +27,23 @@ get_header();
 
 		<div class="slider-container">
 			<div class="map_ui_el">
-				<div id="map-slider" class="map-slider"></div>
-				<div id="hovered">
-					<div>
-						<span id="event-start">Jan, 1800</span> - <span id="event-end">Dec, 2020</span>
+				<div class="d-flex slider-row">
+					<div class="slide-cont">
+						<div id="map-slider" class="map-slider"></div>
+						<div id="dateRange" class="date-range d-flex justify--space-between">
+							<span id="event-start"></span><span id="event-end"></span>
+						</div>
 					</div>
+					<button class="button--infoIcon"><?php get_template_part('/template-parts/info_Icon'); ?></button>
 				</div>
+
+
 			</div>
 		</div>
 	</div>
 </div>
 <div id="map-filter" class="map-filter">
-<?php get_template_part('/template-parts/map/map', 'filters'); ?>
+	<?php get_template_part('/template-parts/map/map', 'filters'); ?>
 </div>
 <?php
 

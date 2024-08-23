@@ -19,7 +19,7 @@ get_header();
 
 <main id="primary" class="site-main">
 	<div class="container">
-		<?php echo get_arrow_with_date("Sep 15, 2024", "Jan 19, 2025", 'fz-xl'); ?>
+		<?php echo get_arrow_with_date("<div>Sep 15,</div> <div>2024</div>", "<div>Jan 19,</div> <div>2025</div>"); ?>
 		<div class="flex-row gap">
 			<div class="col">
 				<?php echo wp_get_attachment_image(190, 'full', false, array('alt' => 'Energy Fields: Vibrations of the Pacific')); ?>

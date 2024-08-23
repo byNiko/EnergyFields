@@ -22,6 +22,6 @@ class Artist {
 		return get_the_post_thumbnail($this->post->ID, $size, $args);
 	}
 	public function get_name(){
-		return $this->post->post_name;
+		return $this->post->post_title;
 	}
 }

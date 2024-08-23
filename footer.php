@@ -2,7 +2,7 @@
 <?php if (!is_front_page()) : ?>
 	<div id="back-to-top-container" class="container button--back-to-top no-padding" style="display:none;">
 		<div class=" d-flex mt-1">
-			<a href="#page" class="button button--accent ml-a">Back to top <?php get_template_part('/dist/images/arrow-up');?></a>
+			<a href="#page" class="button button--accent ml-a">Back to top <?php get_template_part('/template-parts/arrow');?></a>
 	</div>
 	</div>
 <?php endif; ?>

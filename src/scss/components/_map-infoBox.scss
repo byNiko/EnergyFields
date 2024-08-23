@@ -1,14 +1,70 @@
+@use '../abstracts/mixins' as *;
 /** infobox **/
+
+
+@mixin isOverflow(){
+	&::before,&::after  {
+		pointer-events: none;
+		content: '';
+		position: absolute;
+		height: 50px;
+		background: linear-gradient(to top, hsla(0, 0%, 100%), hsla(0, 0%, 100%, 0));
+		z-index: 1;
+	}
+	&::before {
+		inset: 0 0 auto;
+		transform: rotate(180deg);
+	}
+	&::after {
+		inset: auto 0 0;
+	}
+}
+.info-sections {
+	
+	&.isOverflow  {
+		position: relative;
+		@include isOverflow();
+		.inner-info-sections {
+			position: relative;
+			overflow-y:auto;
+			
+		}
+		.inner-inner {
+			position: relative;
+			padding-bottom: 22px;
+			
+			
+		
+	}
+		// .map_ui_el {
+		// 	overflow: auto;
+		// }
+		// .infoBox {
+		// 	padding-bottom: calc(.5 * var(--spacer));
+		// }
+	}
+}
 
 .overlay-map-info-container {
 	--spacer: 32px;
-	--bg: hsla(0, 0%, 100%, .65);
+	--bg: hsla(0, 0%, 100%, 1);
 	position: fixed;
 	top: 90px;
 	bottom: var(--spacer);
-	left: var(--spacer);
-	width: 400px;
+	left: 50%;
+	transform: translatex(-50%);
+	width: 95%;
 	pointer-events: none;
+	opacity:0;
+	transition: opacity .2s 1s;
+	@include bp(md){
+		left: var(--spacer);
+		transform: translatex(0);
+		width: clamp(200px, 40vw, 400px);
+	}
+	&.isLoaded {
+opacity :1;
+	}
 
 	.close-infoBox {
 		border: none;
@@ -18,7 +74,9 @@
 		color: var(--color-accent);
 		font-family: var(-font-family--body);
 		font-weight: 600;
+		padding-right: 0;
 	}
+
 	
 	.inner-map-info-container {
 		position: relative;
@@ -32,22 +90,7 @@
 			display: none;
 		}
 	
-		&.isOverflow{
-			position: relative;
-			&::after {
-				content: '';
-				position: absolute;
-				inset: auto 0 0;
-				height: 50px;
-				background: linear-gradient(to top, hsla(0, 0%, 100%), hsla(0, 0%, 100%, 0));
-			}
-			.map_ui_el {
-				overflow: auto;
-			}
-			.infoBox {
-				padding-bottom: calc(.5 * var(--spacer));
-			}
-		}
+		
 	}
 
 	.infoBox-section {
@@ -59,6 +102,7 @@
 		background: var(--bg);
 		pointer-events: all;
 		position: relative;
+		border: 3px solid var(--color-accent);
 	}
 
 	.infoBox--header {

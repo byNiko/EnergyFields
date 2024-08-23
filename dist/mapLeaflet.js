@@ -614,6 +614,243 @@ L.heatLayer = function (latlngs, options) {
 
 /***/ }),
 
+/***/ "./src/scripts/mapHelperFxns.js":
+/*!**************************************!*\
+  !*** ./src/scripts/mapHelperFxns.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   aggregateFeatures: () => (/* binding */ aggregateFeatures),
+/* harmony export */   dateInRange: () => (/* binding */ dateInRange),
+/* harmony export */   difference: () => (/* binding */ difference),
+/* harmony export */   getCorrectIcon: () => (/* binding */ getCorrectIcon),
+/* harmony export */   getFilterValue: () => (/* binding */ getFilterValue),
+/* harmony export */   getHeatMapArr: () => (/* binding */ getHeatMapArr),
+/* harmony export */   getVerifiedFeatures: () => (/* binding */ getVerifiedFeatures),
+/* harmony export */   makeMarker: () => (/* binding */ makeMarker),
+/* harmony export */   timestamp: () => (/* binding */ timestamp),
+/* harmony export */   updateDates: () => (/* binding */ updateDates)
+/* harmony export */ });
+/* harmony import */ var _mapIcons__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mapIcons */ "./src/scripts/mapIcons.js");
+
+
+// puase timeline when user interacts with timeline
+const handleDates = {
+  start: document.querySelector('#event-start'),
+  end: document.querySelector('#event-end')
+};
+function updateDates(values, handle, unencoded, tap, positions, noUiSlider) {
+  if (handle === 0) {
+    const start = new Date(unencoded[0]);
+    handleDates.start.innerHTML = start.getFullYear();
+  }
+  if (handle === 1) {
+    const end = new Date(unencoded[1]);
+    handleDates.end.innerHTML = end.getFullYear();
+  }
+}
+function getFilterValue() {
+  const checkboxes = document.querySelectorAll('#filters input[type="radio"]');
+  const checked = Array.from(checkboxes).reduce((acc, itt) => {
+    // eslint-disable-next-line no-unused-expressions
+    itt.checked && acc.push(itt.value);
+    return acc;
+  }, []);
+  return checked;
+}
+function getCorrectIcon(f) {
+  const type = f.properties.tags.toLowerCase();
+  return _mapIcons__WEBPACK_IMPORTED_MODULE_0__.icons[type];
+}
+function makeMarker(f) {
+  const featureTags = f.properties.tags.split(',');
+  const coords = f.geometry.coordinates.reverse();
+  let m = false;
+  if (!isNaN(coords[0]) && !isNaN(coords[1])) {
+    const i = getCorrectIcon(f);
+    m = L.marker([...coords], {
+      icon: i,
+      tags: featureTags
+    });
+    m.addEventListener('click', e => {
+      // L.DomUtil.addClass( m._icon, 'isActive' );
+      showInfo(e, f);
+      map.panTo(m.getLatLng());
+    });
+  }
+  return m;
+}
+
+/**
+ * The function `aggregateFeatures` takes an array of JSON objects and returns an array containing all
+ * the `features` from each object.
+ * @param {Array} geoJson array - The `aggregateFeatures` function takes an array of JSON objects as input. Each JSON
+ *                        object in the array should have a property named `features`, which is expected to be an array of
+ *                        features. The function then aggregates all the features from each JSON object into a single array
+ *                        and returns it.
+ * @return {Array} The `aggregateFeatures` function takes an array of JSON objects as input and returns an
+ * array containing all the `features` from each JSON object in the input array.
+ */
+function aggregateFeatures(geoJson) {
+  return geoJson.reduce((acc, itt) => {
+    return acc.concat(itt.features);
+  }, []);
+}
+
+/**
+ * The function `getVerifiedFeatures` filters an array of features based on certain criteria and
+ * processes the data of each feature before returning the filtered array.
+ * @param {Array} features - The `getVerifiedFeatures` function takes an array of features as input and filters
+ *                         out the features that pass the `verifyFeature` function. For each feature that passes the
+ *                         verification, it modifies the `Date` property and adjusts the longitude coordinates to wrap around
+ *                         the anti-meridian.
+ * @return {Array} The `getVerifiedFeatures` function takes an array of features as input and returns a new
+ * array containing only the features that pass the `verifyFeature` check. Each feature in the returned
+ * array has its `Date` property converted to a localized date string and its longitude coordinate
+ * adjusted to wrap around the anti-meridian if necessary.
+ */
+function getVerifiedFeatures(features) {
+  return features.reduce((acc, itt) => {
+    // only include points that have necessary data
+    if (verifyFeature(itt)) {
+      itt.properties.Date = new Date(itt.properties.Date);
+      itt.properties.Date = itt.properties.Date.setFullYear(itt.properties.Date.getFullYear() + 1);
+
+      // move markers back over the anti-meridian
+      const lng = itt.geometry.coordinates[0];
+      itt.geometry.coordinates[0] = L.Util.wrapNum(lng, [-360, 0], true);
+      itt.properties.mag = normalizeMagnitude(itt);
+      acc.push(itt);
+    }
+    return acc;
+  }, []);
+}
+function normalizeMagnitude(feature) {
+  const type = feature.properties.tags;
+  const magnitude = parseInt(feature.properties.Magnitude);
+  let mag = 0;
+  switch (type) {
+    case 'Earthquakes':
+      // max richter scale 10
+      mag = magnitude / 10;
+      break;
+    case 'Volcanoes':
+      // max VEI is 8
+      mag = magnitude / 8;
+      break;
+    case 'Tsunamis':
+      // max TSE is 4
+      mag = magnitude / 4;
+      break;
+    case 'Weapons':
+      // max is 180
+      mag = magnitude / 180;
+      break;
+    default:
+      console.warn('Not a valid energy type');
+  }
+  return mag;
+}
+
+/**
+ * The function `verifyFeature` checks if a given feature has valid coordinates and a date property.
+ * @param {JSON} feature - The `verifyFeature` function checks if a given `feature` object has valid
+ *                       coordinates and a date. The `feature` object should have a `geometry` property with `coordinates`
+ *                       array and a `properties` property with a `Date` value.
+ * @return {boolean} The function `verifyFeature` returns a boolean value that indicates whether the input
+ * `feature` has both valid coordinates and a non-null date in its properties.
+ */
+function verifyFeature(feature) {
+  // has a date and has coordinates
+  const coords = !isNaN(feature.geometry.coordinates[0]) && !isNaN(feature.geometry.coordinates[1]);
+  const hasDate = feature.properties.Date !== null;
+  if (!coords) {
+    console.warn('incorrect geometry.coordinates for: ', feature);
+  }
+  if (!hasDate) {
+    console.warn('incorrect properties.Date for: ', feature);
+  }
+  return coords && hasDate;
+}
+function getHeatMapArr(featuresArr) {
+  return featuresArr.map(f => {
+    return [f.geometry.coordinates[0], f.geometry.coordinates[1], f.properties.mag];
+  });
+}
+
+/**
+ * The function `dateInRange` checks if a target date falls within a specified range of start and end
+ * dates.
+ * @param {string} targetDate - The `targetDate` parameter is the date you want to check if it falls within a
+ *                            specific range defined by `startDate` and `endDate`.
+ * @param {string} startDate  - startDate is the beginning date of the range to check if the targetDate falls
+ *                            within.
+ * @param {string} endDate    - The `endDate` parameter represents the end date of the range you want to check if
+ *                            the `targetDate` falls within. It is used in the `dateInRange` function to determine if the
+ *                            `targetDate` is between `startDate` and `endDate`.
+ * @return {boolean} The function `dateInRange` returns a boolean value indicating whether the `targetDate`
+ * falls within the range defined by `startDate` and `endDate`.
+ */
+function dateInRange(targetDate, startDate, endDate) {
+  const date = new Date(targetDate),
+    start = new Date(startDate),
+    end = new Date(endDate);
+  return date > start && date < end;
+}
+function timestamp(str) {
+  return new Date(str).getTime();
+}
+function difference(a, b) {
+  return Math.abs(a - b);
+}
+
+/***/ }),
+
+/***/ "./src/scripts/mapIcons.js":
+/*!*********************************!*\
+  !*** ./src/scripts/mapIcons.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   icons: () => (/* binding */ icons)
+/* harmony export */ });
+// import L from 'leaflet';
+const tsunamiIcon = `<svg viewBox="0 0 40 40"  xmlns="http://www.w3.org/2000/svg">
+<path d="M33.2659 3.64715C34.6264 2.28173 37 3.22076 37 5.12436V34.88C37 36.0509 36.0265 37.0001 34.8256 37.0001H5.17875C3.25672 37.0001 2.27984 34.747 3.61909 33.4028L33.2659 3.64715Z" />
+</svg>`;
+const earthquakeIcon = `<svg viewBox="0 0 40 40"  xmlns="http://www.w3.org/2000/svg">
+<path d="M38 20C38 29.9411 29.9411 38 20 38C10.0589 38 2 29.9411 2 20C2 10.0589 10.0589 2 20 2C29.9411 2 38 10.0589 38 20Z" />
+</svg>`;
+const volcanoIcon = `<svg viewBox="0 0 40 40"  xmlns="http://www.w3.org/2000/svg">
+<path d="M18.2515 4.14694C19.0135 2.77532 20.9862 2.77532 21.7482 4.14694L38.3491 34.0287C39.0897 35.3617 38.1258 37 36.6008 37H3.39887C1.8739 37 0.909968 35.3617 1.65056 34.0287L18.2515 4.14694Z" />
+</svg>`;
+const weaponIcon = `<svg viewBox="0 0 40 40"  xmlns="http://www.w3.org/2000/svg">
+<path d="M21.7483 36.853C20.9863 38.2247 19.0137 38.2247 18.2517 36.853L1.65071 6.97129C0.910126 5.63823 1.87406 4 3.39903 4L36.601 4C38.1259 4 39.0899 5.63822 38.3493 6.97129L21.7483 36.853Z" />
+</svg>`;
+function makeSVGIcon(iconType, sizeArr = [20, 20], className = '') {
+  return L.divIcon({
+    className: `enery_icon ${className}`,
+    html: iconType,
+    iconSize: sizeArr,
+    iconAnchor: [12, 24],
+    popupAnchor: [7, -16]
+  });
+}
+const icons = {
+  earthquakes: makeSVGIcon(earthquakeIcon),
+  tsunamis: makeSVGIcon(tsunamiIcon),
+  volcanoes: makeSVGIcon(volcanoIcon),
+  weapons: makeSVGIcon(weaponIcon)
+};
+
+/***/ }),
+
 /***/ "./src/scripts/mapInfoBox.js":
 /*!***********************************!*\
   !*** ./src/scripts/mapInfoBox.js ***!
@@ -645,6 +882,7 @@ const infoBox = document.querySelector('#mapInfoBox .infoBox');
 
 // infoBox.Chart = false;
 infoBox.markerClicked = false;
+infoBox.specialShown = false;
 
 // infoBox.onAdd = function( map ) {
 // 	this._div = L.DomUtil.create( 'div', 'infoBox' ); // create a div with a class "info"
@@ -684,55 +922,102 @@ function makeInfoBoxHeader(feature) {
   const props = feature.properties;
   const date = new Date(props.Date);
   return `
-	<header class="infoBox--header">
-		<div class="infoBox--title">
-			<div class="infoBox--year">${date.getFullYear()}</div>
-			<div class="infoBox--location">${props.Location}</div>
+	<section class="infoBox--header-wrapper">
+		<header class="infoBox--header">
+			<div class="infoBox--title">
+				<div class="infoBox--year">${date.getFullYear()}</div>
+				<div class="infoBox--location">${props.Location}</div>
+			</div>
+			<button class="close-infoBox">X</button>
+		</header>
+		<div class='infoBox-section name'>
+			<div class="infoBox--value">
+			${props.Name}
+			</div>
 		</div>
-		<button class="close-infoBox">X</button>
-	</header>
-	<div class='infoBox-section name'>
-		<div class="infoBox--value">
-		${props.Name}
+	</section>
+	<section class='info-sections'>
+		<div class='inner-info-sections'>
+			<div class="inner-inner">
+			
+				<div class="infoBox-section magnitude">
+					<div class="infoBox--title">Magnitude</div>
+					<div class="infoBox--value" >${props.Magnitude} <span class="magnitude-unit">(${props.unit})</span></div>
+				</div>
+				<div class='infoBox-section impact'>
+					<div class="infoBox--title">Impact</div>
+					<div class="infoBox--value" >${props.Impact}</div>
+				</div>
+			</div>
 		</div>
-	</div>
-	<div class="infoBox-section magnitude">
-		<div class="infoBox--title">Magnitude</div>
-		<div class="infoBox--value" >${props.Magnitude} <span class="magnitude-unit">(${props.unit})</span></div>
-	</div>
-	<div class='infoBox-section impact'>
-		<div class="infoBox--title">Impact</div>
-		<div class="infoBox--value" >${props.Impact}</div>
-	</div>
-	<div class='infoBox-section latLng'>
+	</section>
+	<footer class='infoBox-section latLng'>
 		<div class="infoBox--value">
 		${(0,_mapToDegrees_js__WEBPACK_IMPORTED_MODULE_0__["default"])(feature.geometry.coordinates[1],
   // LNG
   feature.geometry.coordinates[0] // LAT
   )}
 		</div>
-	</div>
-</div>
+	</footer>
   `;
 }
 function makeInfoBoxHtml(feature) {
   let html = '';
-  html += makeInfoBoxHeader(feature);
+  if (feature.properties.id === 'special') {
+    html += makeSpecialInfoBoxHtml(feature);
+  } else {
+    html += makeInfoBoxHeader(feature);
+  }
   return html;
+}
+function makeSpecialInfoBoxHtml(feature) {
+  const props = feature.properties;
+  const date = new Date(props.Date);
+  return `
+	<section class="infoBox--header-wrapper">
+		<header class="infoBox--header">
+			<div class="infoBox--title">
+				<div class="infoBox--year">${date.getFullYear()}</div>
+				<div class="infoBox--location">${props.Location}</div>
+			</div>
+			<button class="close-infoBox">X</button>
+		</header>
+		<div class='infoBox-section name'>
+			<div class="infoBox--value">
+			${props.Name}
+			</div>
+		</div>
+	</section>
+	<section class='info-sections'>
+		<div class='inner-info-sections'>
+			<div class="inner-inner">
+				<div class='infoBox-section impact'>
+					<div class="infoBox--value" >${props.Impact}</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<footer class='infoBox-section latLng'>
+	</footer>
+  `;
 }
 function isOverflowY(element) {
   return element.scrollHeight !== Math.max(element.offsetHeight, element.clientHeight);
 }
 const setContainerMaxHeight = () => {
+  const headerWrapperHeight = document.querySelector('.infoBox--header-wrapper').offsetHeight;
+  const footerHeight = document.querySelector('footer.infoBox-section').offsetHeight;
   const infoContainer = document.querySelector('#overlay-map-info-container');
   const mapInfoBox = infoContainer.querySelector('.mapInfoBoxContainer');
-  const ui_el = mapInfoBox.querySelector('.map_ui_el');
-  mapInfoBox.classList.remove('isOverflow');
+  const inner = document.querySelector('.inner-info-sections');
+  // const ui_el = mapInfoBox.querySelector( '.map_ui_el' );
+  const sectionContainer = document.querySelector('.info-sections');
+  sectionContainer.classList.remove('isOverflow');
   const h = infoContainer.offsetHeight;
   const sliderH = document.querySelector('.slider-container').offsetHeight;
-  ui_el.style.maxHeight = `${h - sliderH - 64}px`;
-  if (isOverflowY(mapInfoBox)) {
-    mapInfoBox.classList.add('isOverflow');
+  inner.style.maxHeight = `${h - sliderH - headerWrapperHeight - footerHeight - 64}px`;
+  if (isOverflowY(sectionContainer)) {
+    sectionContainer.classList.add('isOverflow');
   }
 };
 // setContainerMaxHeight();
@@ -755,73 +1040,33 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var leaflet__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! leaflet */ "./node_modules/leaflet/dist/leaflet-src.js");
 /* harmony import */ var leaflet__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(leaflet__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _mapHeatlayer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mapHeatlayer.js */ "./src/scripts/mapHeatlayer.js");
-/* harmony import */ var leaflet_dist_leaflet_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! leaflet/dist/leaflet.css */ "./node_modules/leaflet/dist/leaflet.css");
-/* harmony import */ var leaflet_dist_images_marker_icon_png__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! leaflet/dist/images/marker-icon.png */ "./node_modules/leaflet/dist/images/marker-icon.png");
-/* harmony import */ var leaflet_dist_images_marker_shadow_png__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! leaflet/dist/images/marker-shadow.png */ "./node_modules/leaflet/dist/images/marker-shadow.png");
-/* harmony import */ var _mapFunctions_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./mapFunctions.js */ "./src/scripts/mapFunctions.js");
-/* harmony import */ var _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./mapInfoBox.js */ "./src/scripts/mapInfoBox.js");
-/* harmony import */ var _mapGoogleData__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mapGoogleData */ "./src/scripts/mapGoogleData.js");
-/* harmony import */ var nouislider__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! nouislider */ "./node_modules/nouislider/dist/nouislider.mjs");
-/* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! wnumb */ "./node_modules/wnumb/wNumb.js");
-/* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(wnumb__WEBPACK_IMPORTED_MODULE_9__);
-var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_7__]);
-([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_7__] = __webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__);
+/* harmony import */ var _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mapHelperFxns.js */ "./src/scripts/mapHelperFxns.js");
+/* harmony import */ var _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./mapInfoBox.js */ "./src/scripts/mapInfoBox.js");
+/* harmony import */ var _mapMinZoom_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./mapMinZoom.js */ "./src/scripts/mapMinZoom.js");
+/* harmony import */ var leaflet_dist_leaflet_css__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! leaflet/dist/leaflet.css */ "./node_modules/leaflet/dist/leaflet.css");
+/* harmony import */ var _mapGoogleData__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./mapGoogleData */ "./src/scripts/mapGoogleData.js");
+/* harmony import */ var nouislider__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! nouislider */ "./node_modules/nouislider/dist/nouislider.mjs");
+/* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! wnumb */ "./node_modules/wnumb/wNumb.js");
+/* harmony import */ var wnumb__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(wnumb__WEBPACK_IMPORTED_MODULE_8__);
+var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_3__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_6__]);
+([_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_3__, _mapGoogleData__WEBPACK_IMPORTED_MODULE_6__] = __webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__);
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 
 
-// import 'leaflet-easybutton';
 
-// import '../../node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.js';
+
+
+
 
 // styles
 
-// import '@fortawesome/fontawesome-free/css/all.min.css';
-// import '../../node_modules/leaflet-tag-filter-button/src/leaflet-tag-filter-button.css';
 
-// assets
-
-
-
-
-// import markers from './mapMarkerCluster.js';
-
-// console.log( 'what', markers );
-// import minZoom from './mapMinZoom.js';
-
-
-const svgIcon = `
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-    <path d="M25 7.335c-2.23-2.069-5.217-3.335-8.5-3.335s-6.27 1.265-8.5 3.335v0c2.46 2.283 4 5.544 4 9.165s-1.54 6.882-4 9.165c2.23 2.069 5.217 3.335 8.5 3.335s6.27-1.265 8.5-3.335c-2.46-2.283-4-5.544-4-9.165s1.54-6.882 4-9.165v0 0zM25.706 8.044c2.045 2.226 3.294 5.195 3.294 8.456s-1.249 6.23-3.294 8.456c-2.279-2.101-3.706-5.112-3.706-8.456s1.427-6.355 3.706-8.456v0 0zM7.294 8.044c-2.045 2.226-3.294 5.195-3.294 8.456s1.249 6.23 3.294 8.456c2.279-2.101 3.706-5.112 3.706-8.456s-1.427-6.355-3.706-8.456v0z"></path>
-  </svg>
-`;
-const circleIcon = `
- <svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
-     <circle r="1.5" cx="5" cy="5" fill="hsl(170 60% 30% / .5)" stroke="hsl(230 50% 80% / .25)" stroke-width="1" />
-  </svg>
-`;
-const invisibleIcon = '<div></div>';
-const divIcon = leaflet__WEBPACK_IMPORTED_MODULE_0___default().divIcon({
-  className: 'invisible_marker',
-  // className: 'marker',
-  // html: invisibleIcon,
-  html: circleIcon,
-  iconSize: [40, 40],
-  iconAnchor: [12, 24],
-  popupAnchor: [7, -16]
-});
-// Set up the default icon for markers
-// const DefaultIcon = L.icon( {
-// 	iconUrl: icon,
-// 	shadowUrl: iconShadow,
-// } );
-
-(leaflet__WEBPACK_IMPORTED_MODULE_0___default().Marker).prototype.options.icon = divIcon;
 const defaultStartDate = 'Jan 1,1883';
-const defaultEndDate = 'Dec 1,2020';
+const defaultEndDate = 'Jan 1,2023';
 const time = {
-  start: timestamp(defaultStartDate),
-  end: timestamp(defaultEndDate),
-  range: difference(timestamp(defaultStartDate), timestamp(defaultEndDate)),
+  start: _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.timestamp(defaultStartDate),
+  end: _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.timestamp(defaultEndDate),
+  range: _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.difference(_mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.timestamp(defaultStartDate), _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.timestamp(defaultEndDate)),
   year: 365 * 24 * 60 * 60 // year in seconds
 };
 const tl = {
@@ -842,15 +1087,30 @@ const initView = {
 };
 const mapConfig = {
   // maxBounds: bounds,
-  maxBounds: leaflet__WEBPACK_IMPORTED_MODULE_0___default().latLngBounds([-42.224123, -243.193359], [48.722392, -70.400391]),
+  // maxBounds: L.latLngBounds(
+  // 	[ -42.224123, -243.193359 ],
+  // 	[ 48.722392, -70.400391 ]
+  // ),
   fitBounds: leaflet__WEBPACK_IMPORTED_MODULE_0___default().latLngBounds([-42.224123, -243.193359], [48.722392, -70.400391]),
   zoomSnap: 0.1,
   maxZoom: 12,
-  minZoom: 2.5,
+  minZoom: _mapMinZoom_js__WEBPACK_IMPORTED_MODULE_4__["default"],
   zoomControl: false,
   worldCopyJump: false
 };
-const map = leaflet__WEBPACK_IMPORTED_MODULE_0___default().map('map', mapConfig).setView([initView.lat, initView.lng], initView.zoom);
+const map = leaflet__WEBPACK_IMPORTED_MODULE_0___default().map('map', mapConfig).whenReady(f => {
+  const filterContainerHeight = document.querySelector('#map-filter').offsetHeight;
+  const headerHeight = document.querySelector('.header-container').offsetHeight;
+  const infoContainer = document.querySelector('#overlay-map-info-container');
+  const mapEl = document.querySelector('.map');
+  infoContainer.classList.add('isLoaded');
+  infoContainer.style.bottom = `${filterContainerHeight + 20}px`;
+  infoContainer.style.top = `${headerHeight}px`;
+  mapEl.classList.add('isLoaded');
+  setTimeout(() => {
+    playTimeline();
+  }, 2000);
+}).setView([initView.lat, initView.lng], initView.zoom);
 leaflet__WEBPACK_IMPORTED_MODULE_0___default().tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
   attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
   maxZoom: 16,
@@ -861,12 +1121,6 @@ leaflet__WEBPACK_IMPORTED_MODULE_0___default().tileLayer('https://server.arcgiso
 leaflet__WEBPACK_IMPORTED_MODULE_0___default().control.zoom({
   position: 'bottomright'
 }).addTo(map);
-
-// infoBox.addTo( map );
-
-// create new div icon width svg
-// template svg icon
-
 map.on('click', e => {
   // if we clicked on the infoBox - do nothing
   if (Boolean(e.originalEvent.target.closest('.infoBox'))) {
@@ -876,111 +1130,16 @@ map.on('click', e => {
 });
 
 // put all features into one array
-const allFeatures = aggregateFeatures(_mapGoogleData__WEBPACK_IMPORTED_MODULE_7__.allJson);
-const verifiedFeatures = getVerifiedFeatures(allFeatures);
-
-// get all unique tags in the data
-const allTags = aggregateTags(verifiedFeatures);
-
-// const testGeoJson = L.geoJSON().addTo( map );
-// const theGeoJson = L.geoJSON().addTo( map );
+const allFeatures = _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.aggregateFeatures(_mapGoogleData__WEBPACK_IMPORTED_MODULE_6__.allJson);
+const verifiedFeatures = _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.getVerifiedFeatures(allFeatures);
 const theGeoJson = leaflet__WEBPACK_IMPORTED_MODULE_0___default().geoJSON(verifiedFeatures, {
   pointToLayer(point, latLng) {
-    // const c = new Circle( latLng, 100000 );
-    // c.addEventListener( 'click', ( e ) => {
-    // 	showInfo( e, point );
-    // } );
     const d = makeMarker(point);
     return d;
-  },
-  onEachFeature(f, l) {}
+  }
 });
 theGeoJson.addTo(map);
 map.fitBounds(theGeoJson.getBounds());
-
-/* The below code is using Leaflet library to create a tag filter button on a map. It is creating a
-button that, when clicked, will filter the map based on the tags provided in the `allTags` data
-array. The button will display an icon with the class "fa-filter" from Font Awesome. The
-`filterOnEveryClick` option is set to true, which means that the filter will be applied every time
-the button is clicked. */
-// const filters = L.control.tagFilterButton( {
-// 	data: allTags,
-// 	icon: '<i class="fa-solid fa-filter"></i>',
-// 	filterOnEveryClick: true,
-// 	onSelectionComplete( e ) {
-// 		console.log( 'selected', e );
-// 	},
-// } );
-// filters.addTo( map );
-
-/**
- * fixed popup
- */
-
-// ------------------------------------------------
-
-// const mediaQueryList = window.matchMedia( '(min-width: 700px)' );
-
-// mediaQueryList.addEventListener( 'change', ( event ) => onMediaQueryChange( event ) );
-
-// onMediaQueryChange( mediaQueryList );
-
-// function onMediaQueryChange( event ) {
-// 	if ( event.matches ) {
-// 		document.documentElement.style.setProperty( '--min-width', 'true' );
-// 	} else {
-// 		document.documentElement.style.removeProperty( '--min-width' );
-// 	}
-// }
-
-// function fitBoundsPadding( e ) {
-// 	removeAllAnimationClassFromMap();
-// 	// get with info div
-// 	const boxInfoWith = document.querySelector(
-// 		'.leaflet-popup-content-wrapper'
-// 	).offsetWidth;
-
-// 	// add class to marker
-// 	e.target._icon.classList.add( 'animation' );
-
-// 	// create a feature group, optionally given an initial set of layers
-// 	const featureGroup = L.featureGroup( [ e.target ] ).addTo( map );
-
-// 	// check if attribute exist
-// 	const getPropertyWidth =
-// 		document.documentElement.style.getPropertyValue( '--min-width' );
-
-// 	// sets a map view that contains the given geographical bounds
-// 	// with the maximum zoom level possible
-// 	map.fitBounds( featureGroup.getBounds(), {
-// 		paddingTopLeft: [ getPropertyWidth ? -boxInfoWith : 0, 10 ],
-// 	} );
-// }
-
-// function removeAllAnimationClassFromMap() {
-// 	// get all animation class on map
-// 	const animations = document.querySelectorAll( '.animation' );
-// 	animations.forEach( ( animation ) => {
-// 		animation.classList.remove( 'animation' );
-// 	} );
-
-// 	// back to default position
-// 	map.setView( [ initView.lat, initView.lng ], initView.zoom );
-// }
-
-// function filterDates( features, startDate, endDate ) {
-// 	return features.filter( ( f ) => {
-// 		const targetDate = f.properties.Date;
-// 		return dateInRange( targetDate, startDate, endDate );
-// 	}, [] );
-// }
-
-/**
- * Timeline stuff
- */
-
-////////// begin the helper functions //////////
-
 /**
  * Start Slider Work
  */
@@ -992,88 +1151,40 @@ the button is clicked. */
 // constants for the slider
 const slider = document.getElementById('map-slider');
 
-// const monthsShort = [
-// 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-// ];
-
-// TO-DO: need to change the months to use the start and end dates...
-// const monthVals = monthsShort.map( ( month ) => Date.parse( month + ' 1, 2020' ) );
-
-// const slider_margin = 20;
-// const slider_step = 5;
-// const slider_min = 0;
-// const slider_max = 100;
-// const timeSlider = noUiSlider.create( slider, {
-// 	start: [ 30, 70 ],
-// 	behaviour: 'drag',
-// 	step: slider_step,
-// 	animate: false, // important for the on('slide') `set` calls to be discrete
-// 	//margin: slider_margin,  // don't set as it's covered in the .on('update') event handler
-// 	connect: true,
-// 	range: {
-// 		min: slider_min,
-// 		max: slider_max,
-// 	},
-// } );
-// function enforce_margin_allowing_drag( values, handle, numeric_values ) {
-// 	if ( Math.round( numeric_values[ 1 ] ) < slider_min + slider_margin ) {
-// 		timeSlider.set( [ null, slider_margin ] );
-// 	} else if ( Math.round( numeric_values[ 0 ] ) > slider_max - slider_margin ) {
-// 		timeSlider.set( [ slider_max - slider_margin, null ] );
-// 	} else if ( Math.round( numeric_values[ 1 ] - numeric_values[ 0 ] ) + slider_step <= slider_margin ) {
-// 		if ( handle ) {
-// 	    var nv = numeric_values[ 1 ] - slider_margin;
-// 	    timeSlider.set( [ nv, null ] );
-// 		} else {
-// 	    var nv = numeric_values[ 0 ] + slider_margin;
-// 	    timeSlider.set( [ null, nv ] );
-// 		}
-// 	}
-// }
-// timeSlider.on( 'update', enforce_margin_allowing_drag );
-
 // implement the noUiSlider
-const timeSlider = nouislider__WEBPACK_IMPORTED_MODULE_8__["default"].create(slider, {
-  // step: ,
-  // behaviour: 'tap-drag',
+const timeSlider = nouislider__WEBPACK_IMPORTED_MODULE_7__["default"].create(slider, {
   connect: true,
   animate: false,
-  // limit: 1000000000540,
   behaviour: 'drag-all',
   range: {
     min: time.start,
-    //timestamp( defaultStartDate ),
-    max: time.end //timestamp( defaultEndDate ),
+    max: time.end
   },
   direction: 'ltr',
-  step: 365 * 24 * 60 * 60 * 1000,
-  start: [time.start, time.end - time.range * .8],
-  format: wnumb__WEBPACK_IMPORTED_MODULE_9___default()({
+  // step: 365 * 24 * 60 * 60 * 1000,
+  start: [time.start, time.start],
+  format: wnumb__WEBPACK_IMPORTED_MODULE_8___default()({
     decimals: 0
   })
-  // pips_remove: {
-  // 	mode: 'values',
-  // 	values: monthVals,
-  // 	format: {
-  // 		to( month ) {
-  // 			// custom function to format the months.
-  // 			const targetMonth = new Date( month );
-  // 			if ( window.innerWidth > 740 ) {
-  // 				const monthLabel = monthsShort[ targetMonth.getMonth() ];
-  // 				// console.log( targetMonth.getMonth() );
-  // 				// console.log( monthLabel );
-  // 				return monthLabel;
-  // 			}
-
-  // 			return [];
-  // 		},
-  // 		from( value ) {
-  // 			return value;
-  // 		},
-  // 	},
-  // },
 });
-const hMapArr = getHeatMapArr(verifiedFeatures);
+const hMapArr = _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.getHeatMapArr(verifiedFeatures);
+const specialFeature = {
+  geometry: {
+    type: 'Point',
+    coordinates: Array(2)
+  },
+  properties: {
+    id: 'special',
+    Date: 1704096000000,
+    Name: 'Energy Fields: Vibrations of the Pacific',
+    Impact: '<p>The data points on this map represent major vibrational activity across the Pacific Rim and Oceania from the eruption of Krakatoa in 1883 to the 2022 Hunga Tonga-Hunga Ha\'apai eruption.</p> <p>The data can be filtered by time period and the following types of phenomena: atomic weapons detonations, earthquakes, tsunamis, and volcanic eruptions.</p>',
+    Location: 'Orange, CA'
+  },
+  type: 'Feature'
+};
+if (!_mapInfoBox_js__WEBPACK_IMPORTED_MODULE_3__["default"].specialShown) {
+  // showInfo( undefined, specialFeature );
+}
 const colors = {
   a: {
     0: 'Black',
@@ -1108,232 +1219,60 @@ const heatObj = leaflet__WEBPACK_IMPORTED_MODULE_0___default().heatLayer(hMapArr
   gradient: colors.c
 });
 heatObj.addTo(map);
-
-// puase timeline when user interacts with timeline
 timeSlider.on('start', pauseTimeline);
 timeSlider.on('update', updateMapMarkers);
-timeSlider.on('update', (values, handle, unencoded, tap, positions, noUiSlider) => {
-  // console.log( 'here', values, handle, unencoded, tap, positions, noUiSlider );
-  //updateHeatMap( heatObj, verifiedFeatures, values );
-});
-playTimeline();
+timeSlider.on('update', _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.updateDates);
 document.addEventListener('click', e => {
   if (e.target.classList.contains('close-infoBox')) {
-    _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__["default"].close();
+    _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_3__["default"].close();
+  }
+  if (e.target.closest('.button--infoIcon')) {
+    showInfo(e, specialFeature);
   }
 });
 
 /** map filters */
 const mapfilters = document.querySelector('#filters');
-mapfilters.addEventListener('change', e => {
-  console.log('changed', e.target.value);
-  // map.removeLayer( theGeoJson );
-  tl.checkedFilters = getFilterValue();
+mapfilters.addEventListener('change', () => {
+  // clear info window
+  _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_3__["default"].update();
+  tl.checkedFilters = _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.getFilterValue();
   updateMapMarkers();
-  if (tl.isPaused == 'fine') {
-    const y = verifiedFeatures.filter(f => {
-      return tl.checkedFilters.includes(f.properties.tags.toLowerCase());
-    });
-    console.log('filtered', y);
-    const x = leaflet__WEBPACK_IMPORTED_MODULE_0___default().geoJSON(y, {
-      // filter( a ) {
-      // console.log( 'here', a );
-      // return a.properties.tags = 'Tusnamis';
-      // },
-      pointToLayer(point, latLng) {
-        // const c = new Circle( latLng, 100000 );
-        // c.addEventListener( 'click', ( e ) => {
-        // 	showInfo( e, point );
-        // } );
-        const d = makeMarker(point);
-        return d;
-      },
-      onEachFeature(f, l) {}
-    });
-  }
-  // // console.log( 'checked', checked );
 });
-function getFilterValue() {
-  const checkboxes = document.querySelectorAll('#filters input[type="checkbox"]');
-  const checked = Array.from(checkboxes).reduce((acc, itt) => {
-    // eslint-disable-next-line no-unused-expressions
-    itt.checked && acc.push(itt.value);
-    return acc;
-  }, []);
-  return checked;
-}
 function makeMarker(f) {
   const featureTags = f.properties.tags.split(',');
   const coords = f.geometry.coordinates.reverse();
   let m = false;
   if (!isNaN(coords[0]) && !isNaN(coords[1])) {
+    const i = _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.getCorrectIcon(f);
     m = leaflet__WEBPACK_IMPORTED_MODULE_0___default().marker([...coords], {
-      icon: divIcon,
+      icon: i,
       tags: featureTags
     });
-    // m = new Circle( [ ...coords ], 100000, { tags: featureTags } );
-    // m.setRadius( 5000 );
     m.addEventListener('click', e => {
+      // L.DomUtil.addClass( m._icon, 'isActive' );
       showInfo(e, f);
+      map.panTo(m.getLatLng());
     });
   }
   return m;
 }
 function showInfo(e, f) {
-  leaflet__WEBPACK_IMPORTED_MODULE_0___default().DomEvent.stopPropagation(e); // stop marker click from hitting 'map' object.
+  if (e) {
+    leaflet__WEBPACK_IMPORTED_MODULE_0___default().DomEvent.stopPropagation(e);
+  } // stop marker click from hitting 'map' object.
   // if we clicked the same marker - clear infobox
-  if (f?.properties?.id && _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__["default"].markerClicked === f.properties.id) {
+  if (f?.properties?.id && _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_3__["default"].markerClicked === f.properties.id) {
     f = false;
   }
-  _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_6__["default"].update(f);
-}
-
-/**
- * The function `aggregateFeatures` takes an array of JSON objects and returns an array containing all
- * the `features` from each object.
- * @param {Array} geoJson array - The `aggregateFeatures` function takes an array of JSON objects as input. Each JSON
- *                        object in the array should have a property named `features`, which is expected to be an array of
- *                        features. The function then aggregates all the features from each JSON object into a single array
- *                        and returns it.
- * @return {Array} The `aggregateFeatures` function takes an array of JSON objects as input and returns an
- * array containing all the `features` from each JSON object in the input array.
- */
-function aggregateFeatures(geoJson) {
-  return geoJson.reduce((acc, itt) => {
-    return acc.concat(itt.features);
-  }, []);
-}
-
-/**
- * The function `aggregateTags` takes an array of features and returns an array of unique tags
- * extracted from the properties of each feature.
- * @param {Array} featuresArr - The `aggregateTags` function takes an array `featuresArr` as input. Each
- *                            element in the `featuresArr` array is expected to be an object with a property `properties` which in
- *                            turn has a property `tags`. The function aims to aggregate unique tags from all the elements in the
- * @return {Array} The `aggregateTags` function is returning an array that contains unique tags extracted from
- * the `featuresArr` array. The function iterates over each item in the `featuresArr` array, extracts
- * the `tags` property from each item, and adds unique tags to the result array. Duplicate tags are
- * skipped to ensure only unique tags are included in the final result.
- */
-function aggregateTags(featuresArr) {
-  return featuresArr.reduce((acc, itt) => {
-    const t = itt.properties.tags;
-    if (acc.includes(t)) {
-      // skip if we've already got this tag
-      return acc;
-    }
-    acc.push(t);
-    return acc;
-  }, []);
-}
-
-/**
- * The function `verifyFeature` checks if a given feature has valid coordinates and a date property.
- * @param {JSON} feature - The `verifyFeature` function checks if a given `feature` object has valid
- *                       coordinates and a date. The `feature` object should have a `geometry` property with `coordinates`
- *                       array and a `properties` property with a `Date` value.
- * @return {boolean} The function `verifyFeature` returns a boolean value that indicates whether the input
- * `feature` has both valid coordinates and a non-null date in its properties.
- */
-function verifyFeature(feature) {
-  // has a date and has coordinates
-  const coords = !isNaN(feature.geometry.coordinates[0]) && !isNaN(feature.geometry.coordinates[1]);
-  const hasDate = feature.properties.Date !== null;
-  if (!coords) {
-    console.warn('incorrect geometry.coordinates for: ', feature);
-  }
-  if (!hasDate) {
-    console.warn('incorrect properties.Date for: ', feature);
-  }
-  return coords && hasDate;
-}
-
-/**
- * The function `getVerifiedFeatures` filters an array of features based on certain criteria and
- * processes the data of each feature before returning the filtered array.
- * @param {Array} features - The `getVerifiedFeatures` function takes an array of features as input and filters
- *                         out the features that pass the `verifyFeature` function. For each feature that passes the
- *                         verification, it modifies the `Date` property and adjusts the longitude coordinates to wrap around
- *                         the anti-meridian.
- * @return {Array} The `getVerifiedFeatures` function takes an array of features as input and returns a new
- * array containing only the features that pass the `verifyFeature` check. Each feature in the returned
- * array has its `Date` property converted to a localized date string and its longitude coordinate
- * adjusted to wrap around the anti-meridian if necessary.
- */
-function getVerifiedFeatures(features) {
-  return features.reduce((acc, itt) => {
-    // only include points that have necessary data
-    if (verifyFeature(itt)) {
-      itt.properties.Date = new Date(itt.properties.Date).toLocaleDateString('en-US');
-      // move markers back over the anti-meridian
-      const lng = itt.geometry.coordinates[0];
-      itt.geometry.coordinates[0] = leaflet__WEBPACK_IMPORTED_MODULE_0___default().Util.wrapNum(lng, [-360, 0], true);
-      itt.properties.mag = normalizeMagnitude(itt);
-      acc.push(itt);
-    }
-    return acc;
-  }, []);
-}
-function normalizeMagnitude(feature) {
-  const type = feature.properties.tags;
-  const magnitude = parseInt(feature.properties.Magnitude);
-  let mag = 0;
-  switch (type) {
-    case 'Earthquakes':
-      // max richter scale 10
-      mag = magnitude / 10;
-      break;
-    case 'Volcanoes':
-      // max VEI is 8
-      mag = magnitude / 8;
-      break;
-    case 'Tsunamis':
-      // max TSE is 4
-      mag = magnitude / 4;
-      break;
-    case 'Weapons':
-      // max is 180
-      mag = magnitude / 180;
-      break;
-    default:
-      console.warn('Not a valid energy type');
-  }
-  return mag;
-}
-
-/**
- * The function `dateInRange` checks if a target date falls within a specified range of start and end
- * dates.
- * @param {string} targetDate - The `targetDate` parameter is the date you want to check if it falls within a
- *                            specific range defined by `startDate` and `endDate`.
- * @param {string} startDate  - startDate is the beginning date of the range to check if the targetDate falls
- *                            within.
- * @param {string} endDate    - The `endDate` parameter represents the end date of the range you want to check if
- *                            the `targetDate` falls within. It is used in the `dateInRange` function to determine if the
- *                            `targetDate` is between `startDate` and `endDate`.
- * @return {boolean} The function `dateInRange` returns a boolean value indicating whether the `targetDate`
- * falls within the range defined by `startDate` and `endDate`.
- */
-function dateInRange(targetDate, startDate, endDate) {
-  const date = new Date(targetDate),
-    start = new Date(startDate),
-    end = new Date(endDate);
-  return date > start && date < end;
-}
-function timestamp(str) {
-  return new Date(str).getTime();
-}
-function difference(a, b) {
-  return Math.abs(a - b);
-}
-function checkFilter(feature) {
-  return tl.checkedFilters.length === 0 || tl.checkedFilters.includes(feature.properties.tags.toLowerCase());
+  // console.log( 'f', f );
+  _mapInfoBox_js__WEBPACK_IMPORTED_MODULE_3__["default"].update(f);
 }
 function refreshMarkers(layer, newStart, newEnd) {
   const {
     feature
   } = layer;
-  const inRange = dateInRange(feature.properties.Date, newStart, newEnd);
+  const inRange = _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.dateInRange(feature.properties.Date, newStart, newEnd);
   const inFilter = checkFilter(feature);
   if (inRange && inFilter) {
     layer.addTo(map);
@@ -1352,26 +1291,15 @@ function updateMapMarkers(values) {
   });
   updateHeatMap(verifiedFeatures, values);
 }
-function getHeatMapArr(featuresArr) {
-  return featuresArr.map(f => {
-    return [f.geometry.coordinates[0], f.geometry.coordinates[1], f.properties.mag];
-  });
-}
-// function filterByType( arr, type ) {
-// 	return arr.filter( ( feature ) => {
-// 		return feature.properties.tags.contains( type );
-// 	} );
-// }
-
 function updateHeatMap(featuresArr, values) {
   const newStart = new Date(parseInt(values[0]));
   const newEnd = new Date(parseInt(values[1]));
   const filteredHeatArr = featuresArr.filter(feature => {
-    const inRange = dateInRange(feature.properties.Date, newStart, newEnd);
+    const inRange = _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.dateInRange(feature.properties.Date, newStart, newEnd);
     const inFilter = checkFilter(feature);
-    return inFilter && inRange && dateInRange(feature.properties.Date, newStart, newEnd);
+    return inFilter && inRange && _mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.dateInRange(feature.properties.Date, newStart, newEnd);
   });
-  heatObj.setLatLngs(getHeatMapArr(filteredHeatArr));
+  heatObj.setLatLngs(_mapHelperFxns_js__WEBPACK_IMPORTED_MODULE_2__.getHeatMapArr(filteredHeatArr));
 }
 function pauseTimeline() {
   tl.isPaused = true;
@@ -1400,8 +1328,62 @@ function playTimeline() {
     }
   }, .25);
 }
+// necessary on this file.
+function checkFilter(feature) {
+  const isAll = tl.checkedFilters.includes('all') || tl.checkedFilters.length === 0;
+  return isAll || tl.checkedFilters.includes(feature.properties.tags.toLowerCase());
+}
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } });
+
+/***/ }),
+
+/***/ "./src/scripts/mapMinZoom.js":
+/*!***********************************!*\
+  !*** ./src/scripts/mapMinZoom.js ***!
+  \***********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+// Get the largest screen dimension
+// reason for doing this is a phone may start in portrait then move to landscape
+const maxScreenDimension = window.innerHeight > window.innerWidth ? window.innerHeight : window.innerWidth;
+
+// assuming tiles are 256 x 256
+const tileSize = 256;
+
+// How many tiles needed to for the largest screen dimension
+// I take the floor because I don't want to see more then 1 world
+// Use Math.ceil if you don't mind seeing the world repeat
+const maxTiles = Math.floor(maxScreenDimension / tileSize);
+
+/* MATH MAGIC !!!!!
+	number of tiles needed for one side = 2 ^ zoomlevel
+	or
+	maxTiles = 2 ^ zoomlevel
+	Time to show my steps! assuming log base 2 for all steps
+
+	log(2 ^ zoomlevel) = log(maxTiles)
+	properties of logs
+	zoomlevel * log(2) = log(maxTiles)
+	log base 2 of 2 is just 1
+	zoomlevel * 1 = log(maxTiles)
+	JS Math.log is ln (natural log) not base 2
+	So we need to use another log property
+	Math.log(maxTiles) / Math.log(2) = Log base 2 of maxTiles
+*/
+
+// I am taking the ceiling so I don't see more then 1 world
+// Use Math.floor if you don't mind seeing the world repeat
+let minZoom = Math.floor(Math.log(maxTiles) / Math.log(2));
+// minZoom = 2;
+// only let minZoom be 2 or higher
+minZoom = minZoom < 1 ? 1 : minZoom;
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (minZoom);
 
 /***/ }),
 
@@ -17057,28 +17039,6 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 /***/ }),
 
-/***/ "./node_modules/leaflet/dist/images/marker-icon.png":
-/*!**********************************************************!*\
-  !*** ./node_modules/leaflet/dist/images/marker-icon.png ***!
-  \**********************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "images/marker-icon.2b3e1faf.png";
-
-/***/ }),
-
-/***/ "./node_modules/leaflet/dist/images/marker-shadow.png":
-/*!************************************************************!*\
-  !*** ./node_modules/leaflet/dist/images/marker-shadow.png ***!
-  \************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "images/marker-shadow.a0c6cc14.png";
-
-/***/ }),
-
 /***/ "//cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.8/dayjs.min.js":
 /*!*****************************************************************************!*\
   !*** external "//cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.8/dayjs.min.js" ***!
@@ -21498,18 +21458,6 @@ function initialize(target, originalOptions) {
 /******/ 		};
 /******/ 	})();
 /******/ 	
-/******/ 	/* webpack/runtime/global */
-/******/ 	(() => {
-/******/ 		__webpack_require__.g = (function() {
-/******/ 			if (typeof globalThis === 'object') return globalThis;
-/******/ 			try {
-/******/ 				return this || new Function('return this')();
-/******/ 			} catch (e) {
-/******/ 				if (typeof window === 'object') return window;
-/******/ 			}
-/******/ 		})();
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
@@ -21524,29 +21472,6 @@ function initialize(target, originalOptions) {
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/publicPath */
-/******/ 	(() => {
-/******/ 		var scriptUrl;
-/******/ 		if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
-/******/ 		var document = __webpack_require__.g.document;
-/******/ 		if (!scriptUrl && document) {
-/******/ 			if (document.currentScript)
-/******/ 				scriptUrl = document.currentScript.src;
-/******/ 			if (!scriptUrl) {
-/******/ 				var scripts = document.getElementsByTagName("script");
-/******/ 				if(scripts.length) {
-/******/ 					var i = scripts.length - 1;
-/******/ 					while (i > -1 && (!scriptUrl || !/^http(s?):/.test(scriptUrl))) scriptUrl = scripts[i--].src;
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/ 		// When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration
-/******/ 		// or pass an empty string ("") and set the __webpack_public_path__ variable from your code to use your own logic.
-/******/ 		if (!scriptUrl) throw new Error("Automatic publicPath is not supported in this browser");
-/******/ 		scriptUrl = scriptUrl.replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
-/******/ 		__webpack_require__.p = scriptUrl;
 /******/ 	})();
 /******/ 	
 /************************************************************************/

@@ -17,12 +17,14 @@
 	justify-content: space-between;
 	position: relative;
 	z-index: 100;
+	pointer-events: none;
 
 }
 
 .site-branding {
 	width: 550px;
 	z-index: 1000;
+	pointer-events: all;
 
 	img {
 		width: 100%;
@@ -35,6 +37,7 @@
 	font-size: var(--fz-md);
 	width: 100%;
 	text-align: center;
+	pointer-events: all;
 
 	@include bp(md) {
 		width: auto;
@@ -74,8 +77,9 @@
 		font-family: var(--ff-header-normal);
 	
 		transition: color 1.2s, border-color .2s;
-		font-size: 1.3rem;
+		
 		letter-spacing: 2px;
+		font-size: var(--fz-hlg);
 		.nav-link__text {
 			// border-bottom: 2px solid transparent;
 		}
@@ -102,6 +106,9 @@
 	display: block;
 	position: relative;
 	z-index: 1000;
+pointer-events: all;
+padding-top: 0;
+padding-right: 0;
 
 	@include bp(md) {
 		display: none;

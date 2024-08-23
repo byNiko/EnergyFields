@@ -48,7 +48,7 @@ $allLocations = get_posts($default_args);
 			$classCount = 0;
 			if ($allLocations) :
 				foreach ($allLocations as $l) :
-					$section_class = $classCount > 0 ? "mt-section" : '';
+					$section_class = $classCount > 0 ? "mt-section" : 'mt-1';
 					$classCount++;
 					$location = new Location($l); ?>
 					<section class="<?= $section_class; ?> ">

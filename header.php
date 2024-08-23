@@ -14,7 +14,12 @@
 
 	<?php wp_body_open(); ?>
 	<?php if (is_front_page()) : ?>
-		<div id="map" class="map"></div>
+		<div class="loader-container">
+		<div class="loader"></div>
+		</div>
+		<div id="map" class="map">
+		
+		</div>
 	<?php endif; ?>
 	<div id="page" class="site">
 		<div class="header-container">

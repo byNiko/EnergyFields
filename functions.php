@@ -46,6 +46,8 @@ function byniko_setup() {
 		* @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
 		*/
 	add_theme_support('post-thumbnails');
+	add_image_size( 'byniko-xl', 1000, 600 );
+	add_image_size( 'byniko-big-thumb', 400, 400 );
 
 	// This theme uses wp_nav_menu() in one location.
 	register_nav_menus(

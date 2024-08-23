@@ -15,6 +15,7 @@ const infoBox = document.querySelector( '#mapInfoBox .infoBox' );
 
 // infoBox.Chart = false;
 infoBox.markerClicked = false;
+infoBox.specialShown = false;
 
 // infoBox.onAdd = function( map ) {
 // 	this._div = L.DomUtil.create( 'div', 'infoBox' ); // create a div with a class "info"
@@ -43,6 +44,7 @@ infoBox.update = async function( feature ) {
 		infoBox.close();
 		return;
 	}
+	
 	infoBox.markerClicked = feature.properties.id;
 	infoEl.classList.remove( 'is-empty' );
 	infoEl.innerHTML = makeInfoBoxHtml( feature );
@@ -56,41 +58,84 @@ function makeInfoBoxHeader( feature ) {
 	const props = feature.properties;
 	const date = new Date( props.Date );
 	return `
-	<header class="infoBox--header">
-		<div class="infoBox--title">
-			<div class="infoBox--year">${ date.getFullYear() }</div>
-			<div class="infoBox--location">${ props.Location }</div>
+	<section class="infoBox--header-wrapper">
+		<header class="infoBox--header">
+			<div class="infoBox--title">
+				<div class="infoBox--year">${ date.getFullYear() }</div>
+				<div class="infoBox--location">${ props.Location }</div>
+			</div>
+			<button class="close-infoBox">X</button>
+		</header>
+		<div class='infoBox-section name'>
+			<div class="infoBox--value">
+			${ props.Name }
+			</div>
 		</div>
-		<button class="close-infoBox">X</button>
-	</header>
-	<div class='infoBox-section name'>
-		<div class="infoBox--value">
-		${ props.Name }
+	</section>
+	<section class='info-sections'>
+		<div class='inner-info-sections'>
+			<div class="inner-inner">
+			
+				<div class="infoBox-section magnitude">
+					<div class="infoBox--title">Magnitude</div>
+					<div class="infoBox--value" >${ props.Magnitude } <span class="magnitude-unit">(${ props.unit })</span></div>
+				</div>
+				<div class='infoBox-section impact'>
+					<div class="infoBox--title">Impact</div>
+					<div class="infoBox--value" >${ props.Impact }</div>
+				</div>
+			</div>
 		</div>
-	</div>
-	<div class="infoBox-section magnitude">
-		<div class="infoBox--title">Magnitude</div>
-		<div class="infoBox--value" >${ props.Magnitude } <span class="magnitude-unit">(${ props.unit })</span></div>
-	</div>
-	<div class='infoBox-section impact'>
-		<div class="infoBox--title">Impact</div>
-		<div class="infoBox--value" >${ props.Impact }</div>
-	</div>
-	<div class='infoBox-section latLng'>
+	</section>
+	<footer class='infoBox-section latLng'>
 		<div class="infoBox--value">
 		${ toDegrees(
 		feature.geometry.coordinates[ 1 ], // LNG
 		feature.geometry.coordinates[ 0 ] // LAT
 	) }
 		</div>
-	</div>
-</div>
+	</footer>
   `;
 }
 function makeInfoBoxHtml( feature ) {
 	let html = '';
-	html += makeInfoBoxHeader( feature );
+	if ( feature.properties.id === 'special' ) {
+		html += makeSpecialInfoBoxHtml( feature );
+	} else {
+		html += makeInfoBoxHeader( feature );
+	}
 	return html;
+}
+function makeSpecialInfoBoxHtml( feature ) {
+	const props = feature.properties;
+	const date = new Date( props.Date );
+	return `
+	<section class="infoBox--header-wrapper">
+		<header class="infoBox--header">
+			<div class="infoBox--title">
+				<div class="infoBox--year">${ date.getFullYear() }</div>
+				<div class="infoBox--location">${ props.Location }</div>
+			</div>
+			<button class="close-infoBox">X</button>
+		</header>
+		<div class='infoBox-section name'>
+			<div class="infoBox--value">
+			${ props.Name }
+			</div>
+		</div>
+	</section>
+	<section class='info-sections'>
+		<div class='inner-info-sections'>
+			<div class="inner-inner">
+				<div class='infoBox-section impact'>
+					<div class="infoBox--value" >${ props.Impact }</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<footer class='infoBox-section latLng'>
+	</footer>
+  `;
 }
 
 function isOverflowY( element ) {
@@ -98,18 +143,22 @@ function isOverflowY( element ) {
 }
 
 const setContainerMaxHeight = () => {
+	const headerWrapperHeight = document.querySelector( '.infoBox--header-wrapper' ).offsetHeight;
+	const footerHeight = document.querySelector( 'footer.infoBox-section' ).offsetHeight;
 	const infoContainer = document.querySelector( '#overlay-map-info-container' );
 	const mapInfoBox = infoContainer.querySelector( '.mapInfoBoxContainer' );
-	const ui_el = mapInfoBox.querySelector( '.map_ui_el' );
+	const inner = document.querySelector( '.inner-info-sections' );
+	// const ui_el = mapInfoBox.querySelector( '.map_ui_el' );
+	const sectionContainer = document.querySelector( '.info-sections' );
 
-	mapInfoBox.classList.remove( 'isOverflow' );
+	sectionContainer.classList.remove( 'isOverflow' );
 
 	const h = infoContainer.offsetHeight;
 	const sliderH = document.querySelector( '.slider-container' ).offsetHeight;
 
-	ui_el.style.maxHeight = `${ h - sliderH - 64 }px`;
-	if ( isOverflowY( mapInfoBox ) ) {
-		mapInfoBox.classList.add( 'isOverflow' );
+	inner.style.maxHeight = `${ h - sliderH - headerWrapperHeight - footerHeight - 64 }px`;
+	if ( isOverflowY( sectionContainer ) ) {
+		sectionContainer.classList.add( 'isOverflow' );
 	}
 };
 // setContainerMaxHeight();

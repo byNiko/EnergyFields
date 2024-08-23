@@ -1,43 +1,23 @@
-import { gsap } from './gsap.min.js';
-import { ScrollTrigger } from './ScrollTrigger.min.js';
-const scrollSections = gsap.utils.toArray( '.scroll-target' );
-const links = gsap.utils.toArray( '.inpage-links a' );
-const activeClass = 'is-active';
-scrollSections.forEach( ( section, i ) => {
-	const link = links[ i ];
-	ScrollTrigger.create( {
-		trigger: section,
-		start: 'top+=10% center+=30%',
-		// end: 'bottom center',
-		onEnter: ( t ) => {
-			links.forEach( ( l ) => {
-				l.classList.remove( activeClass );
-			} );
-			link.classList.add( activeClass );
-		},
-		onEnterBack: () => {
-			links.forEach( ( l ) => {
-				l.classList.remove( activeClass );
-			} );
-			link.classList.add( activeClass );
-		},
-		onLeave: () => {
-			links.forEach( ( l ) => {
-				l.classList.remove( activeClass );
-			} );
-			// link.classList.add( activeClass );
-		},
-		onLeaveBack: () => {
-			links.forEach( ( l ) => {
-				l.classList.remove( activeClass );
-			} );
-			// link.classList.add( activeClass );
-		},
-		// markers: true,
-	} );
-} );
+const sections = document.querySelectorAll( '.scroll-target' );
+const linksCont = document.querySelector( '.inpage-links' );
+const links = linksCont.querySelectorAll( '.inpage-link' );
+if ( sections && linksCont ) {
+	const activeClass = 'is-active';
 
-links.forEach( ( link ) => link.addEventListener( 'click', trackActive ) );
-function trackActive( e ) {
-	this.classList.add( 'is-active' );
+	const observer = new IntersectionObserver( ( entries ) => {
+		for ( const entry of entries ) {
+			if ( entry.boundingClientRect.y < window.innerHeight - 200 ) {
+				links.forEach( ( l ) => {
+					l.classList.remove( activeClass );
+				} );
+				linksCont.querySelector( `[href="#${ entry.target.id }"]` ).classList.add( activeClass );
+			}
+		}
+	}, {
+		rootMargin: '-50% 0px',
+	} );
+	for ( let i = 0; i < sections.length; i++ ) {
+		observer.observe( sections[ i ] );
+	}
 }
+

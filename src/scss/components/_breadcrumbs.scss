@@ -1,0 +1,17 @@
+@use '../abstracts/mixins' as *;
+.breadcrumbs {
+	display: flex;
+	font-size: var(--fz-sm);
+	margin-block-end: 1rem;
+	@include bp(md){
+	margin-block-start: -1rem;
+	}
+
+}
+.breadcrumb {
+	display: flex;
+	&:has(a):after {
+		content: "->";
+		padding-inline: .51em;
+	}
+}
