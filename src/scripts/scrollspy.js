@@ -1,7 +1,7 @@
 const sections = document.querySelectorAll( '.scroll-target' );
 const linksCont = document.querySelector( '.inpage-links' );
-const links = linksCont.querySelectorAll( '.inpage-link' );
 if ( sections && linksCont ) {
+	const links = linksCont.querySelectorAll( '.inpage-link' );
 	const activeClass = 'is-active';
 
 	const observer = new IntersectionObserver( ( entries ) => {

@@ -1,4 +1,4 @@
-import * as tokens from './mapTokens.js';
+// import * as tokens from './mapTokens.js';
 // import { dlEndpoint } from './mapConstants.js';
 // import averageColor, { nmToHsl } from './average-color.js';
 import getMarkerColor from './mapGetMarketColor.js';

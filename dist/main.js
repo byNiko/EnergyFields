@@ -161,8 +161,8 @@ __webpack_require__.r(__webpack_exports__);
 
 const sections = document.querySelectorAll('.scroll-target');
 const linksCont = document.querySelector('.inpage-links');
-const links = linksCont.querySelectorAll('.inpage-link');
 if (sections && linksCont) {
+  const links = linksCont.querySelectorAll('.inpage-link');
   const activeClass = 'is-active';
   const observer = new IntersectionObserver(entries => {
     for (const entry of entries) {

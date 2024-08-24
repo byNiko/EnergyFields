@@ -1,7 +1,8 @@
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 
 import L from 'leaflet';
-import './mapHeatlayer.js';
+// import './mapHeatlayer.js';
+import 'leaflet.heat';
 import * as helpers from './mapHelperFxns.js';
 import infoBox from './mapInfoBox.js';
 
@@ -10,7 +11,11 @@ import minZoom from './mapMinZoom.js';
 // styles
 import 'leaflet/dist/leaflet.css';
 
-import { allJson } from './mapGoogleData';
+// const allFeatures = helpers.aggregateFeatures( allJson );
+// console.log( JSON.stringify( allFeatures ) );
+import allFeatures from './mapAllFeatures.js';
+
+// import { allJson } from './mapGoogleData';
 
 const defaultStartDate = 'Jan 1,1883';
 const defaultEndDate = 'Jan 1,2023';
@@ -91,7 +96,7 @@ map.on( 'click', ( e ) => {
 } );
 
 // put all features into one array
-const allFeatures = helpers.aggregateFeatures( allJson );
+
 const verifiedFeatures = helpers.getVerifiedFeatures( allFeatures );
 
 const theGeoJson = L.geoJSON( verifiedFeatures, {
@@ -232,7 +237,7 @@ function showInfo( e, f ) {
 	infoBox.update( f );
 }
 
-function refreshMarkers( layer, newStart, newEnd ) {
+function refreshMarker( layer, newStart, newEnd ) {
 	const { feature } = layer;
 	const inRange = helpers.dateInRange( feature.properties.Date, newStart, newEnd );
 	const inFilter = checkFilter( feature );
@@ -251,7 +256,7 @@ function updateMapMarkers( values ) {
 	const newEnd = new Date( parseInt( values[ 1 ] ) );
 
 	theGeoJson.eachLayer( ( layer ) => {
-		refreshMarkers( layer, newStart, newEnd );
+		refreshMarker( layer, newStart, newEnd );
 	} );
 	updateHeatMap( verifiedFeatures, values );
 }
@@ -290,7 +295,6 @@ function playTimeline() {
 
 	tl.intervalFxn = setInterval( () => {
 		if ( ! tl.isPaused ) {
-			tl.iterations++;
 			timeSlider.setHandle( 1, tl.lastTime, true );
 			tl.lastTime = tl.lastTime + tl.interval;
 
@@ -298,6 +302,7 @@ function playTimeline() {
 				clearInterval( tl.intervalFxn );
 				tl.isPaused = true;
 			}
+			tl.iterations++;
 		}
 	}, .25 );
 }
