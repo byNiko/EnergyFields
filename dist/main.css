@@ -990,7 +990,6 @@ progress {
 .loader {
   display: inline-grid;
   padding: 5px;
-  filter: blur(4px) contrast(12);
 }
 
 .loader:before {
@@ -2044,6 +2043,7 @@ figure > figcaption {
   z-index: 1;
 }
 .info-sections.isOverflow::before {
+  display: none;
   inset: 0 0 auto;
   transform: rotate(180deg);
 }

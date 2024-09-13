@@ -12,6 +12,7 @@
 		z-index: 1;
 	}
 	&::before {
+		display: none;
 		inset: 0 0 auto;
 		transform: rotate(180deg);
 	}
