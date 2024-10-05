@@ -35,7 +35,7 @@ class Artwork {
 	public function get_future_events() {
 		$timesArr = $this->get_event_times();
 		function test_future($time) {
-			$date_now = strtotime(date('Y-m-d H:i:s'));
+			$date_now = strtotime(date('Y-m-d H:i:s')) - 43000;
 			return strtotime($time['start']) >= $date_now;
 		}
 		$filtered = array_filter($timesArr, "test_future");

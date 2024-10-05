@@ -1,6 +1,6 @@
 <?php
 get_header();
-$future_events = (new Byniko())->get_all_future_events();
+$future_events = (new Byniko())->get_all_events();
 ?>
 
 	<header class="entry-header ">

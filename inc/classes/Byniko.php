@@ -41,9 +41,12 @@ class Byniko {
 
 	public function get_all_events() {
 		$events = $this->assign_og_post_id_to_all_events();
+
 		usort($events, function ($a, $b) {
+			// var_dump(strtotime($a['start']));
 			return strtotime($a['start']) >= strtotime($b['start']);
 		});
+
 
 		return $events;
 	}
@@ -52,8 +55,8 @@ class Byniko {
 		$events = $this->get_all_events();
 
 		function test_future($date) {
-			$date_now = strtotime(date('Y-m-d H:i:s'));
-			return strtotime($date['start']) >= $date_now;
+			$date_now = strtotime(date('Y-m-d H:i:s'))  - 43000;			
+			return strtotime($date['start'])  >= $date_now;
 		}
 		$filtered = array_filter($events, "test_future");
 		return $filtered;

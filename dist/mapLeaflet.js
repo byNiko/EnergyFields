@@ -3226,7 +3226,7 @@ const allFeatures = [{
   type: 'Feature',
   geometry: {
     type: 'Point',
-    coordinates: [115.529701232, -20.435070037]
+    coordinates: [115.529701232, -20.7]
   },
   properties: {
     id: 6,
@@ -3256,7 +3256,7 @@ const allFeatures = [{
     'Year Ranges': '1953 - 1963',
     Date: '1952',
     Name: 'The United Kingdom',
-    Location: 'Maralinga Islands, Australia',
+    Location: 'Maralinga, Australia',
     Magnitude: '19 (total)',
     unit: 'Number of Detonations',
     'Latitude / Longitude': 'Latitude: 30.1632° S, Longitude: 131.5752° E',
